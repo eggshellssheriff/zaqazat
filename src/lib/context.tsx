@@ -38,6 +38,7 @@ interface AppContextType {
   adjustQuantity: (id: string, changeAmount: number) => void;
   addOrder: (order: Omit<Order, "id">) => void;
   updateOrder: (order: Order) => void;
+  updateOrderStatus: (id: string, status: string) => void;
   deleteOrder: (id: string) => void;
   toggleTheme: () => void;
   setSidebarOpen: (open: boolean) => void;
@@ -146,6 +147,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  const updateOrderStatus = (id: string, status: string) => {
+    setOrders(
+      orders.map((order) =>
+        order.id === id ? { ...order, status } : order
+      )
+    );
+    const orderNumber = id.slice(-4);
+    toast({
+      title: "Статус изменен",
+      description: `Заказ #${orderNumber} теперь в статусе "${status}"`,
+    });
+  };
+
   const deleteOrder = (id: string) => {
     setOrders(orders.filter((order) => order.id !== id));
     toast({
@@ -172,6 +186,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         adjustQuantity,
         addOrder,
         updateOrder,
+        updateOrderStatus,
         deleteOrder,
         toggleTheme,
         setSidebarOpen,

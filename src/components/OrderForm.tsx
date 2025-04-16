@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Trash2 } from "lucide-react";
 
 type OrderFormProps = {
@@ -42,7 +43,7 @@ export function OrderForm({ open, onOpenChange, initialData }: OrderFormProps) {
   const { addOrder, updateOrder, products } = useApp();
   const [customerName, setCustomerName] = useState(initialData?.customerName || "");
   const [date, setDate] = useState(initialData?.date || new Date().toISOString().split("T")[0]);
-  const [status, setStatus] = useState(initialData?.status || "new");
+  const [status, setStatus] = useState(initialData?.status || "Новый");
   const [orderProducts, setOrderProducts] = useState<
     Array<{
       productId: string;
@@ -51,6 +52,9 @@ export function OrderForm({ open, onOpenChange, initialData }: OrderFormProps) {
       price: number;
     }>
   >(initialData?.products || []);
+  const [newProductName, setNewProductName] = useState("");
+  const [newProductPrice, setNewProductPrice] = useState("");
+  const [newProductQuantity, setNewProductQuantity] = useState("1");
 
   const isEditMode = !!initialData;
 
@@ -84,16 +88,13 @@ export function OrderForm({ open, onOpenChange, initialData }: OrderFormProps) {
     if (!isEditMode) {
       setCustomerName("");
       setDate(new Date().toISOString().split("T")[0]);
-      setStatus("new");
+      setStatus("Новый");
       setOrderProducts([]);
     }
   };
 
-  const addProductToOrder = () => {
-    // Only add if there are products available
-    if (products.length === 0) return;
-    
-    // Filter products that aren't already in the order
+  const addExistingProductToOrder = () => {
+    // Фильтруем продукты, которые уже есть в заказе
     const availableProducts = products.filter(
       (p) => !orderProducts.some((op) => op.productId === p.id)
     );
@@ -111,6 +112,33 @@ export function OrderForm({ open, onOpenChange, initialData }: OrderFormProps) {
         price: productToAdd.price,
       },
     ]);
+  };
+
+  const addCustomProductToOrder = () => {
+    if (!newProductName || !newProductPrice) return;
+    
+    const customPrice = parseFloat(newProductPrice);
+    const customQuantity = parseInt(newProductQuantity) || 1;
+    
+    if (isNaN(customPrice) || customPrice <= 0) return;
+    
+    // Генерируем уникальный ID для пользовательского товара
+    const customId = `custom-${Date.now()}`;
+    
+    setOrderProducts([
+      ...orderProducts,
+      {
+        productId: customId,
+        name: newProductName,
+        quantity: customQuantity,
+        price: customPrice,
+      },
+    ]);
+    
+    // Сбрасываем форму добавления пользовательского товара
+    setNewProductName("");
+    setNewProductPrice("");
+    setNewProductQuantity("1");
   };
 
   const removeProductFromOrder = (index: number) => {
@@ -196,11 +224,11 @@ export function OrderForm({ open, onOpenChange, initialData }: OrderFormProps) {
                   <SelectValue placeholder="Выберите статус" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="new">Новый</SelectItem>
-                  <SelectItem value="processing">В обработке</SelectItem>
-                  <SelectItem value="shipped">Отправлен</SelectItem>
-                  <SelectItem value="delivered">Доставлен</SelectItem>
-                  <SelectItem value="cancelled">Отменен</SelectItem>
+                  <SelectItem value="Новый">Новый</SelectItem>
+                  <SelectItem value="В обработке">В обработке</SelectItem>
+                  <SelectItem value="Отправлен">Отправлен</SelectItem>
+                  <SelectItem value="Доставлен">Доставлен</SelectItem>
+                  <SelectItem value="Отменен">Отменен</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -209,17 +237,80 @@ export function OrderForm({ open, onOpenChange, initialData }: OrderFormProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Товары</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addProductToOrder}
-                disabled={products.length === 0 || products.every((p) => orderProducts.some((op) => op.productId === p.id))}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Добавить товар
-              </Button>
             </div>
+            
+            <Tabs defaultValue="existing">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="existing">Существующие товары</TabsTrigger>
+                <TabsTrigger value="custom">Свой товар</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="existing" className="space-y-4 pt-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addExistingProductToOrder}
+                  disabled={products.length === 0 || products.every((p) => orderProducts.some((op) => op.productId === p.id))}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Добавить существующий товар
+                </Button>
+                
+                {products.length === 0 && (
+                  <div className="text-sm text-muted-foreground">
+                    Нет доступных товаров. Добавьте товары в каталог или используйте вкладку "Свой товар".
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="custom" className="space-y-4 pt-3">
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="col-span-3">
+                    <Label htmlFor="newProductName">Название</Label>
+                    <Input
+                      id="newProductName"
+                      value={newProductName}
+                      onChange={(e) => setNewProductName(e.target.value)}
+                      placeholder="Название товара"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="newProductPrice">Цена (тг)</Label>
+                    <Input
+                      id="newProductPrice"
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={newProductPrice}
+                      onChange={(e) => setNewProductPrice(e.target.value)}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="newProductQuantity">Количество</Label>
+                    <Input
+                      id="newProductQuantity"
+                      type="number"
+                      min="1"
+                      value={newProductQuantity}
+                      onChange={(e) => setNewProductQuantity(e.target.value)}
+                      placeholder="1"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <Button
+                      type="button"
+                      onClick={addCustomProductToOrder}
+                      disabled={!newProductName || !newProductPrice || parseFloat(newProductPrice) <= 0}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Добавить
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
             
             {orderProducts.length === 0 ? (
               <div className="border rounded-md p-4 text-center text-muted-foreground">
@@ -232,21 +323,33 @@ export function OrderForm({ open, onOpenChange, initialData }: OrderFormProps) {
                     key={index}
                     className="grid grid-cols-[1fr,auto,auto,auto] gap-2 items-center border rounded-md p-2"
                   >
-                    <Select
-                      value={product.productId}
-                      onValueChange={(value) => handleProductSelect(index, value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Выберите товар" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {products.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>
-                            {p.name}
+                    {product.productId.startsWith('custom-') ? (
+                      <div className="font-medium">{product.name}</div>
+                    ) : (
+                      <Select
+                        value={product.productId}
+                        onValueChange={(value) => handleProductSelect(index, value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Выберите товар" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {/* Добавляем текущий товар, даже если его нет в списке доступных */}
+                          <SelectItem key={product.productId} value={product.productId}>
+                            {product.name}
                           </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                          
+                          {/* Добавляем остальные доступные товары */}
+                          {products
+                            .filter((p) => p.id !== product.productId && !orderProducts.some((op, i) => i !== index && op.productId === p.id))
+                            .map((p) => (
+                              <SelectItem key={p.id} value={p.id}>
+                                {p.name}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    )}
 
                     <Input
                       type="number"
@@ -256,9 +359,20 @@ export function OrderForm({ open, onOpenChange, initialData }: OrderFormProps) {
                       onChange={(e) => updateOrderProduct(index, "quantity", parseInt(e.target.value) || 1)}
                     />
 
-                    <div className="text-right w-20">
-                      {product.price.toFixed(2)} ₽
-                    </div>
+                    {product.productId.startsWith('custom-') ? (
+                      <Input
+                        type="number"
+                        min="0"
+                        step="1"
+                        className="w-20"
+                        value={product.price}
+                        onChange={(e) => updateOrderProduct(index, "price", parseFloat(e.target.value) || 0)}
+                      />
+                    ) : (
+                      <div className="text-right w-20">
+                        {product.price.toFixed(0)} тг
+                      </div>
+                    )}
 
                     <Button
                       type="button"
@@ -274,7 +388,7 @@ export function OrderForm({ open, onOpenChange, initialData }: OrderFormProps) {
                 <div className="flex justify-end border-t pt-2">
                   <div className="text-right">
                     <div className="text-sm text-muted-foreground">Итого:</div>
-                    <div className="font-semibold">{totalAmount.toFixed(2)} ₽</div>
+                    <div className="font-semibold">{totalAmount.toFixed(0)} тг</div>
                   </div>
                 </div>
               </div>

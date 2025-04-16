@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useApp } from "@/lib/context";
-import { XCircle, Upload } from "lucide-react";
+import { XCircle, Upload, Camera } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +13,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 
 type ProductFormProps = {
   open: boolean;
@@ -35,6 +41,10 @@ export function ProductForm({ open, onOpenChange, initialData }: ProductFormProp
   const [description, setDescription] = useState(initialData?.description || "");
   const [image, setImage] = useState<string | null>(initialData?.image || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [imageSource, setImageSource] = useState<"file" | "camera">("file");
 
   const isEditMode = !!initialData;
 
@@ -67,6 +77,8 @@ export function ProductForm({ open, onOpenChange, initialData }: ProductFormProp
       setDescription("");
       setImage(null);
     }
+    // Обязательно отключаем камеру при закрытии
+    stopCamera();
   };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -85,10 +97,66 @@ export function ProductForm({ open, onOpenChange, initialData }: ProductFormProp
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    stopCamera();
+  };
+
+  const startCamera = async () => {
+    if (!videoRef.current) return;
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: {
+          facingMode: "environment" // Используем заднюю камеру на мобильных устройствах
+        } 
+      });
+      videoRef.current.srcObject = stream;
+      setCameraActive(true);
+    } catch (err) {
+      console.error("Ошибка доступа к камере:", err);
+      alert("Не удалось получить доступ к камере. Проверьте разрешения.");
+    }
+  };
+
+  const stopCamera = () => {
+    if (!videoRef.current || !videoRef.current.srcObject) return;
+    
+    const stream = videoRef.current.srcObject as MediaStream;
+    const tracks = stream.getTracks();
+    
+    tracks.forEach(track => track.stop());
+    videoRef.current.srcObject = null;
+    setCameraActive(false);
+  };
+
+  const captureImage = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+    
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    
+    // Устанавливаем размеры холста равными размерам видео
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Рисуем текущий кадр видео на холсте
+    const context = canvas.getContext('2d');
+    if (context) {
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      // Преобразуем холст в data URL и устанавливаем его как изображение
+      const imageData = canvas.toDataURL('image/png');
+      setImage(imageData);
+      
+      // Останавливаем камеру
+      stopCamera();
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      if (!isOpen) stopCamera(); // Останавливаем камеру при закрытии диалога
+      onOpenChange(isOpen);
+    }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
@@ -110,16 +178,16 @@ export function ProductForm({ open, onOpenChange, initialData }: ProductFormProp
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="price">Цена (₽)</Label>
+              <Label htmlFor="price">Цена (тг)</Label>
               <Input
                 id="price"
                 type="number"
                 min="0"
-                step="0.01"
+                step="1"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 required
-                placeholder="0.00"
+                placeholder="0"
               />
             </div>
             
@@ -149,7 +217,7 @@ export function ProductForm({ open, onOpenChange, initialData }: ProductFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="image">Изображение</Label>
+            <Label>Изображение</Label>
             
             {image ? (
               <div className="relative">
@@ -169,27 +237,75 @@ export function ProductForm({ open, onOpenChange, initialData }: ProductFormProp
                 </Button>
               </div>
             ) : (
-              <div className="border rounded-md p-4 flex flex-col items-center justify-center gap-2 h-48 bg-muted/30">
-                <Upload className="h-8 w-8 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">
-                  Загрузите изображение
-                </p>
-                <Input
-                  ref={fileInputRef}
-                  id="image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  Выбрать файл
-                </Button>
-              </div>
+              <Tabs defaultValue="file" onValueChange={(value) => {
+                setImageSource(value as "file" | "camera");
+                if (value === "camera") {
+                  startCamera();
+                } else {
+                  stopCamera();
+                }
+              }}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="file">Галерея</TabsTrigger>
+                  <TabsTrigger value="camera">Камера</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="file">
+                  <div className="border rounded-md p-4 flex flex-col items-center justify-center gap-2 h-48 bg-muted/30">
+                    <Upload className="h-8 w-8 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      Загрузите изображение
+                    </p>
+                    <Input
+                      ref={fileInputRef}
+                      id="image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Выбрать файл
+                    </Button>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="camera">
+                  <div className="border rounded-md p-4 flex flex-col items-center justify-center h-48 bg-muted/30 relative">
+                    <video 
+                      ref={videoRef} 
+                      autoPlay 
+                      playsInline
+                      className={`w-full h-full object-cover ${cameraActive ? 'block' : 'hidden'}`}
+                    />
+                    
+                    {!cameraActive && (
+                      <>
+                        <Camera className="h-8 w-8 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">
+                          Сделайте фото с камеры
+                        </p>
+                      </>
+                    )}
+                    
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={cameraActive ? captureImage : startCamera}
+                      className="mt-2"
+                    >
+                      {cameraActive ? "Сделать фото" : "Включить камеру"}
+                    </Button>
+                    
+                    {/* Скрытый холст для захвата изображения */}
+                    <canvas ref={canvasRef} className="hidden" />
+                  </div>
+                </TabsContent>
+              </Tabs>
             )}
           </div>
 

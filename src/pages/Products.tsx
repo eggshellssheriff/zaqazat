@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { useApp } from "@/lib/context";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";  // Add this import
 import { ProductCard } from "@/components/ProductCard";
 import { ProductForm } from "@/components/ProductForm";
 import { Search } from "@/components/Search";

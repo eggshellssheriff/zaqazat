@@ -16,6 +16,7 @@ type Order = {
   customerName: string;
   date: string;
   status: string;
+  phoneNumber?: string;
   products: Array<{
     productId: string;
     name: string;
@@ -54,7 +55,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [orders, setOrders] = useState<Order[]>(() => {
     const savedOrders = localStorage.getItem("orders");
-    return savedOrders ? JSON.parse(savedOrders) : [];
+    // Update any existing orders to have one of the valid statuses
+    const existingOrders = savedOrders ? JSON.parse(savedOrders) : [];
+    return existingOrders.map((order: Order) => ({
+      ...order,
+      status: ["в пути", "на складе"].includes(order.status) ? order.status : "в пути"
+    }));
   });
 
   const [theme, setTheme] = useState<Theme>(() => {
@@ -124,10 +130,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addOrder = (order: Omit<Order, "id">) => {
+    // Ensure order has one of the valid statuses
+    const validStatus = ["в пути", "на складе"].includes(order.status || "") 
+      ? order.status 
+      : "в пути";
+
     const newOrder = {
       ...order,
       id: Date.now().toString(),
+      status: validStatus,
     };
+    
     setOrders([...orders, newOrder]);
     toast({
       title: "Заказ создан",
@@ -136,23 +149,41 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateOrder = (updatedOrder: Order) => {
+    // Ensure updated order has one of the valid statuses
+    const validStatus = ["в пути", "на складе"].includes(updatedOrder.status) 
+      ? updatedOrder.status 
+      : "в пути";
+
+    const validatedOrder = {
+      ...updatedOrder,
+      status: validStatus
+    };
+
     setOrders(
       orders.map((order) =>
-        order.id === updatedOrder.id ? updatedOrder : order
+        order.id === validatedOrder.id ? validatedOrder : order
       )
     );
+    
     toast({
       title: "Заказ обновлен",
-      description: `Заказ #${updatedOrder.id.slice(-4)} успешно обновлен`,
+      description: `Заказ #${validatedOrder.id.slice(-4)} успешно обновлен`,
     });
   };
 
   const updateOrderStatus = (id: string, status: string) => {
+    // Validate that the status is one of the allowed values
+    if (!["в пути", "на складе"].includes(status)) {
+      console.error("Invalid status:", status);
+      return;
+    }
+
     setOrders(
       orders.map((order) =>
         order.id === id ? { ...order, status } : order
       )
     );
+    
     const orderNumber = id.slice(-4);
     toast({
       title: "Статус изменен",

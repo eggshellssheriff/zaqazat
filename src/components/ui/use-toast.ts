@@ -1,16 +1,18 @@
 
 import { useToast, toast } from "@/hooks/use-toast";
 
-// Настройка свайпабельных уведомлений
+// Настройка компактных уведомлений снизу экрана
 const originalToast = toast;
 
 // Создаем обертку над оригинальным toast
-const swipeableToast = (props: Parameters<typeof originalToast>[0]) => {
+const compactToast = (props: Parameters<typeof originalToast>[0]) => {
   return originalToast({
     ...props,
-    // Добавляем возможность закрывать уведомление свайпом
-    className: `${props.className || ''} swipeable-toast`,
+    // Добавляем классы для стилизации
+    className: `${props.className || ''} compact-toast swipeable-toast`,
+    // Уменьшаем время отображения
+    duration: props.duration || 3000,
   });
 };
 
-export { useToast, swipeableToast as toast };
+export { useToast, compactToast as toast };

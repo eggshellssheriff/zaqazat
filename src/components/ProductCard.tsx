@@ -4,6 +4,7 @@ import { useApp } from "@/lib/context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ProductForm } from "./ProductForm";
+import { ProductModal } from "./ProductModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,9 +32,10 @@ interface ProductCardProps {
   viewMode?: "grid" | "list";
 }
 
-export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
+export function ProductCard({ product, viewMode = "list" }: ProductCardProps) {
   const { deleteProduct, adjustQuantity } = useApp();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   
   const handleDelete = () => {
     deleteProduct(product.id);
@@ -46,7 +48,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
   if (viewMode === "list") {
     return (
       <>
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden cursor-pointer" onClick={() => setModalOpen(true)}>
           <div className="flex items-center p-3">
             <div className="h-16 w-16 mr-4 bg-muted/20 flex-shrink-0 rounded overflow-hidden">
               {product.image ? (
@@ -66,9 +68,6 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="font-medium text-base truncate">{product.name}</h3>
-                  <p className="text-sm text-muted-foreground line-clamp-1">
-                    {product.description || "Нет описания"}
-                  </p>
                 </div>
                 <div className="flex flex-col items-end ml-2">
                   <p className="font-semibold whitespace-nowrap">{product.price.toFixed(0)} тг</p>
@@ -77,7 +76,10 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6"
-                      onClick={() => handleQuantityChange(-1)}
+                      onClick={(e) => {
+                        e.stopPropagation(); 
+                        handleQuantityChange(-1);
+                      }}
                       disabled={product.quantity <= 0}
                     >
                       <MinusCircle className="h-3 w-3" />
@@ -87,7 +89,10 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6"
-                      onClick={() => handleQuantityChange(1)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleQuantityChange(1);
+                      }}
                     >
                       <PlusCircle className="h-3 w-3" />
                     </Button>
@@ -100,7 +105,10 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
                   variant="outline"
                   size="sm"
                   className="h-7 text-xs"
-                  onClick={() => setEditDialogOpen(true)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditDialogOpen(true);
+                  }}
                 >
                   <Pencil className="h-3 w-3 mr-1" />
                   Изменить
@@ -108,7 +116,12 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
                 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm" className="h-7 text-xs">
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      className="h-7 text-xs"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Trash2 className="h-3 w-3 mr-1" />
                       Удалить
                     </Button>
@@ -141,13 +154,17 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
           onOpenChange={setEditDialogOpen}
           initialData={product}
         />
+
+        {modalOpen && (
+          <ProductModal product={product} onClose={() => setModalOpen(false)} />
+        )}
       </>
     );
   }
 
   return (
     <>
-      <Card className="h-full flex flex-col">
+      <Card className="h-full flex flex-col cursor-pointer" onClick={() => setModalOpen(true)}>
         <div className="relative h-48 overflow-hidden bg-muted/20">
           {product.image ? (
             <img
@@ -167,10 +184,6 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
             <h3 className="font-medium text-lg">{product.name}</h3>
             <p className="font-semibold text-right">{product.price.toFixed(0)} тг</p>
           </div>
-          
-          <p className="text-sm text-muted-foreground mt-2 line-clamp-3">
-            {product.description || "Нет описания"}
-          </p>
         </CardContent>
         
         <CardFooter className="flex flex-col gap-3 p-4 pt-0 border-t">
@@ -182,7 +195,10 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7"
-                onClick={() => handleQuantityChange(-1)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleQuantityChange(-1);
+                }}
                 disabled={product.quantity <= 0}
               >
                 <MinusCircle className="h-4 w-4" />
@@ -194,7 +210,10 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7"
-                onClick={() => handleQuantityChange(1)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleQuantityChange(1);
+                }}
               >
                 <PlusCircle className="h-4 w-4" />
               </Button>
@@ -206,7 +225,10 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
               variant="outline"
               size="sm"
               className="flex-1"
-              onClick={() => setEditDialogOpen(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditDialogOpen(true);
+              }}
             >
               <Pencil className="h-4 w-4 mr-2" />
               Изменить
@@ -214,7 +236,12 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
             
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm" className="flex-1">
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Удалить
                 </Button>
@@ -246,6 +273,10 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
         onOpenChange={setEditDialogOpen}
         initialData={product}
       />
+
+      {modalOpen && (
+        <ProductModal product={product} onClose={() => setModalOpen(false)} />
+      )}
     </>
   );
 }

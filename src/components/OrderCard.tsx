@@ -4,10 +4,10 @@ import { useApp } from "@/lib/context";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { OrderForm } from "./OrderForm";
+import { OrderModal } from "./OrderModal";
 import { AlertTriangle, Calendar, Edit, Trash, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
@@ -33,6 +34,7 @@ type Order = {
   customerName: string;
   date: string;
   status: string;
+  phoneNumber?: string;
   products: Array<{
     productId: string;
     name: string;
@@ -50,6 +52,7 @@ export function OrderCard({ order }: OrderCardProps) {
   const { deleteOrder, updateOrderStatus } = useApp();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   // Format the date to a more readable format
   const formattedDate = new Date(order.date).toLocaleDateString("ru-RU", {
@@ -69,30 +72,32 @@ export function OrderCard({ order }: OrderCardProps) {
 
   const getBadgeVariant = (status: string) => {
     switch (status.toLowerCase()) {
-      case "выполнен":
-      case "доставлен":
+      case "на складе":
         return "default";
-      case "в обработке":
-      case "отправлен":
+      case "в пути":
         return "secondary";
-      case "отменен":
-        return "destructive";
       default:
         return "outline";
     }
   };
 
-  const statuses = ["Новый", "В обработке", "Отправлен", "Доставлен", "Отменен"];
+  // Limited status options
+  const statuses = ["в пути", "на складе"];
 
   return (
     <>
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden cursor-pointer" onClick={() => setShowDetailsModal(true)}>
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <CardTitle className="text-lg">{order.customerName}</CardTitle>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 pl-2 pr-1">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 pl-2 pr-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Badge variant={getBadgeVariant(order.status)} className="mr-1">
                     {order.status}
                   </Badge>
@@ -103,7 +108,10 @@ export function OrderCard({ order }: OrderCardProps) {
                 {statuses.map((status) => (
                   <DropdownMenuItem
                     key={status}
-                    onClick={() => handleStatusChange(status)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleStatusChange(status);
+                    }}
                     className={status === order.status ? "bg-accent font-medium" : ""}
                   >
                     {status}
@@ -119,17 +127,15 @@ export function OrderCard({ order }: OrderCardProps) {
         </CardHeader>
         <CardContent className="pb-2">
           <div className="space-y-1">
-            <div className="text-sm text-muted-foreground">Товары:</div>
-            <ul className="list-disc list-inside space-y-0.5">
-              {order.products.map((product) => (
-                <li key={product.productId} className="text-sm">
-                  {product.name} ({product.quantity} шт x {product.price} тг)
-                </li>
-              ))}
-            </ul>
-            <div className="text-sm font-medium mt-2">
-              Итого: {order.totalAmount} тг
+            <div className="text-sm">
+              {order.products[0]?.name || "Нет товаров"}
+              {order.products.length > 1 && ` и ещё ${order.products.length - 1} товар(ов)`}
             </div>
+            {order.phoneNumber && (
+              <div className="text-sm text-muted-foreground">
+                Телефон: {order.phoneNumber}
+              </div>
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex justify-between pt-2">
@@ -137,7 +143,10 @@ export function OrderCard({ order }: OrderCardProps) {
             variant="ghost"
             size="sm"
             className="text-destructive"
-            onClick={() => setShowDeleteDialog(true)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowDeleteDialog(true);
+            }}
           >
             <Trash className="h-4 w-4 mr-1" />
             Удалить
@@ -145,7 +154,10 @@ export function OrderCard({ order }: OrderCardProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowEditDialog(true)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowEditDialog(true);
+            }}
           >
             <Edit className="h-4 w-4 mr-1" />
             Редактировать
@@ -180,6 +192,13 @@ export function OrderCard({ order }: OrderCardProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {showDetailsModal && (
+        <OrderModal 
+          order={order} 
+          onClose={() => setShowDetailsModal(false)} 
+        />
+      )}
     </>
   );
 }

@@ -33,9 +33,11 @@ export function Search({ type }: SearchProps) {
 
       if (type === "products") {
         results = products.filter((product) => {
+          // Enhanced search by name to include partial matches
           const matchesQuery = query.trim() === "" || 
             product.name.toLowerCase().includes(query.toLowerCase()) ||
-            product.description.toLowerCase().includes(query.toLowerCase());
+            product.description.toLowerCase().includes(query.toLowerCase()) ||
+            product.price.toString().includes(query); // Search by price
           
           const matchesPrice = 
             (minPrice === "" || product.price >= parseFloat(minPrice)) &&
@@ -49,15 +51,23 @@ export function Search({ type }: SearchProps) {
         });
       } else {
         results = orders.filter((order) => {
-          const matchesQuery = query.trim() === "" || 
+          // Enhanced search by customer name or by product name within orders
+          const matchesNameOrId = query.trim() === "" || 
             order.customerName.toLowerCase().includes(query.toLowerCase()) ||
             order.id.includes(query);
           
-          const matchesPrice = 
+          // Search in products inside the order
+          const matchesProductNames = order.products.some(p => 
+            p.name.toLowerCase().includes(query.toLowerCase())
+          );
+          
+          // Search by order total price
+          const matchesPrice = query.trim() === "" || 
+            order.totalAmount.toString().includes(query) ||
             (minPrice === "" || order.totalAmount >= parseFloat(minPrice)) &&
             (maxPrice === "" || order.totalAmount <= parseFloat(maxPrice));
           
-          return matchesQuery && matchesPrice;
+          return (matchesNameOrId || matchesProductNames) && matchesPrice;
         });
       }
 
@@ -90,7 +100,7 @@ export function Search({ type }: SearchProps) {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={type === "products" ? "Поиск товаров..." : "Поиск заказов..."}
+            placeholder={type === "products" ? "Поиск товаров (имя, цена)..." : "Поиск заказов (клиент, товар, цена)..."}
             className="pl-9"
           />
           {query && (
@@ -190,14 +200,14 @@ export function Search({ type }: SearchProps) {
                   <>
                     <div className="font-medium">{item.name}</div>
                     <div className="text-sm text-muted-foreground">
-                      {item.price.toFixed(2)} ₽ · {item.quantity} шт.
+                      {item.price.toFixed(0)} тг · {item.quantity} шт.
                     </div>
                   </>
                 ) : (
                   <>
                     <div className="font-medium">Заказ #{item.id.slice(-4)}</div>
                     <div className="text-sm text-muted-foreground">
-                      {item.customerName} · {item.totalAmount.toFixed(2)} ₽
+                      {item.customerName} · {item.totalAmount.toFixed(0)} тг
                     </div>
                   </>
                 )}

@@ -29,7 +29,7 @@ export function Sidebar() {
       <div className={`fixed top-0 left-0 z-50 h-full w-64 bg-card transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:z-0`}>
         <div className="flex flex-col h-full border-r">
           <div className="p-4 flex items-center justify-between border-b">
-            <h2 className="text-lg font-semibold">Учет товаров</h2>
+            <h2 className="text-lg font-semibold">zaqaz</h2>
             <Button variant="ghost" size="icon" className="lg:hidden" onClick={closeSidebar}>
               <X className="h-5 w-5" />
             </Button>

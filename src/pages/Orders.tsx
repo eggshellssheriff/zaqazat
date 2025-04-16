@@ -13,7 +13,7 @@ const Orders = () => {
   const { orders, products } = useApp();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid"); // Default to grid view
   const [showScrollTop, setShowScrollTop] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -57,6 +57,16 @@ const Orders = () => {
               <Badge variant="outline" className="mr-2">
                 {orders.length}
               </Badge>
+              <Button 
+                onClick={() => setAddDialogOpen(true)} 
+                disabled={products.length === 0}
+                title={products.length === 0 ? "Добавьте товары, чтобы создать заказ" : ""}
+                className="bg-green-500 hover:bg-green-600"
+                size="sm"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Создать заказ
+              </Button>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -80,14 +90,6 @@ const Orders = () => {
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <Search type="orders" />
-            <Button 
-              onClick={() => setAddDialogOpen(true)} 
-              disabled={products.length === 0}
-              title={products.length === 0 ? "Добавьте товары, чтобы создать заказ" : ""}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Создать заказ
-            </Button>
           </div>
         </div>
 
@@ -100,6 +102,7 @@ const Orders = () => {
             <Button 
               onClick={() => setAddDialogOpen(true)} 
               disabled={products.length === 0}
+              className="bg-green-500 hover:bg-green-600"
             >
               <Plus className="mr-2 h-4 w-4" />
               Создать заказ

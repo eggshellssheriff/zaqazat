@@ -10,24 +10,25 @@ import Orders from "./pages/Orders";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
+// Create a client
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AppProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+    <BrowserRouter>
+      <AppProvider>
+        <TooltipProvider>
           <Routes>
             <Route path="/" element={<Products />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AppProvider>
+          <Toaster />
+          <Sonner />
+        </TooltipProvider>
+      </AppProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 

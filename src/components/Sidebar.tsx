@@ -4,26 +4,27 @@ import { Button } from "@/components/ui/button";
 import { 
   Package,
   ShoppingCart,
-  User,
   Settings,
   Sun,
   Moon,
   Menu,
   X
 } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export function Sidebar() {
   const { theme, toggleTheme, sidebarOpen, setSidebarOpen } = useApp();
-  const location = useLocation();
-
+  
   const closeSidebar = () => {
     setSidebarOpen(false);
   };
 
   return (
     <>
-      <div className={`sidebar-overlay ${sidebarOpen ? 'open' : ''}`} onClick={closeSidebar}></div>
+      <div 
+        className={`fixed inset-0 bg-background/80 backdrop-blur-sm z-40 ${sidebarOpen ? 'block' : 'hidden'} lg:hidden`} 
+        onClick={closeSidebar}
+      ></div>
       
       <div className={`fixed top-0 left-0 z-50 h-full w-64 bg-card transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:z-0`}>
         <div className="flex flex-col h-full border-r">
@@ -37,7 +38,7 @@ export function Sidebar() {
           <nav className="flex-1 p-4 space-y-1">
             <Link to="/" onClick={closeSidebar}>
               <Button
-                variant={location.pathname === "/" ? "secondary" : "ghost"}
+                variant="ghost"
                 className="w-full justify-start"
               >
                 <Package className="mr-2 h-4 w-4" />
@@ -47,7 +48,7 @@ export function Sidebar() {
             
             <Link to="/orders" onClick={closeSidebar}>
               <Button
-                variant={location.pathname === "/orders" ? "secondary" : "ghost"}
+                variant="ghost"
                 className="w-full justify-start"
               >
                 <ShoppingCart className="mr-2 h-4 w-4" />
@@ -57,7 +58,7 @@ export function Sidebar() {
             
             <Link to="/settings" onClick={closeSidebar}>
               <Button
-                variant={location.pathname === "/settings" ? "secondary" : "ghost"}
+                variant="ghost"
                 className="w-full justify-start"
               >
                 <Settings className="mr-2 h-4 w-4" />

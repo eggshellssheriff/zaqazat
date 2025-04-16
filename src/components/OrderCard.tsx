@@ -1,22 +1,26 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useApp } from "@/lib/context";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { OrderForm } from "./OrderForm";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Pencil, Trash2, User, Calendar, Package } from "lucide-react";
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { OrderForm } from "./OrderForm";
+import { AlertTriangle, Calendar, Edit, Trash, User } from "lucide-react";
 
 type Order = {
   id: string;
@@ -38,133 +42,110 @@ interface OrderCardProps {
 
 export function OrderCard({ order }: OrderCardProps) {
   const { deleteOrder } = useApp();
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  // Format the date to a more readable format
+  const formattedDate = new Date(order.date).toLocaleDateString("ru-RU", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+
   const handleDelete = () => {
     deleteOrder(order.id);
+    setShowDeleteDialog(false);
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("ru-RU");
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "new":
-        return <Badge variant="default">Новый</Badge>;
-      case "processing":
-        return <Badge variant="secondary">В обработке</Badge>;
-      case "shipped":
-        return <Badge variant="primary">Отправлен</Badge>;
-      case "delivered":
-        return <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-          Доставлен
-        </Badge>;
-      case "cancelled":
-        return <Badge variant="destructive">Отменен</Badge>;
+  const getBadgeVariant = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "выполнен":
+        return "default";
+      case "в обработке":
+        return "secondary";
+      case "отменен":
+        return "destructive";
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return "outline";
     }
   };
 
   return (
     <>
-      <Card className="h-full flex flex-col">
-        <CardContent className="flex-1 p-4">
-          <div className="flex justify-between items-start mb-3">
-            <h3 className="font-medium text-lg">Заказ #{order.id.slice(-4)}</h3>
-            {getStatusBadge(order.status)}
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-start">
+            <CardTitle className="text-lg">{order.customerName}</CardTitle>
+            <Badge variant={getBadgeVariant(order.status)}>{order.status}</Badge>
           </div>
-          
-          <div className="space-y-2 mb-4">
-            <div className="flex items-center gap-2 text-sm">
-              <User className="h-4 w-4" />
-              <span>{order.customerName}</span>
-            </div>
-            
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4" />
-              <span>{formatDate(order.date)}</span>
-            </div>
-            
-            <div className="flex items-center gap-2 text-sm">
-              <Package className="h-4 w-4" />
-              <span>{order.products.length} товаров</span>
-            </div>
-          </div>
-          
-          <div className="border-t pt-3">
-            <h4 className="font-medium mb-2">Товары:</h4>
-            <ul className="space-y-2 text-sm">
-              {order.products.slice(0, 3).map((product, index) => (
-                <li key={index} className="flex justify-between">
-                  <div className="flex-1">
-                    <span>{product.name}</span>
-                    <span className="text-muted-foreground"> × {product.quantity}</span>
-                  </div>
-                  <span>{(product.price * product.quantity).toFixed(2)} ₽</span>
+          <CardDescription className="flex items-center gap-1 text-sm">
+            <Calendar className="h-3 w-3" />
+            {formattedDate}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pb-2">
+          <div className="space-y-1">
+            <div className="text-sm text-muted-foreground">Товары:</div>
+            <ul className="list-disc list-inside space-y-0.5">
+              {order.products.map((product) => (
+                <li key={product.productId} className="text-sm">
+                  {product.name} ({product.quantity} шт x {product.price} ₽)
                 </li>
               ))}
-              
-              {order.products.length > 3 && (
-                <li className="text-sm text-muted-foreground">
-                  И еще {order.products.length - 3} товаров
-                </li>
-              )}
             </ul>
-          </div>
-          
-          <div className="flex justify-between items-center mt-4 pt-2 border-t">
-            <span className="font-medium">Итого:</span>
-            <span className="font-semibold">{order.totalAmount.toFixed(2)} ₽</span>
+            <div className="text-sm font-medium mt-2">
+              Итого: {order.totalAmount} ₽
+            </div>
           </div>
         </CardContent>
-        
-        <CardFooter className="flex justify-between gap-2 p-4 pt-0 border-t">
+        <CardFooter className="flex justify-between pt-2">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="flex-1"
-            onClick={() => setEditDialogOpen(true)}
+            className="text-destructive"
+            onClick={() => setShowDeleteDialog(true)}
           >
-            <Pencil className="h-4 w-4 mr-2" />
-            Изменить
+            <Trash className="h-4 w-4 mr-1" />
+            Удалить
           </Button>
-          
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm" className="flex-1">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Удалить
-              </Button>
-            </AlertDialogTrigger>
-            
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Удаление заказа</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Вы уверены, что хотите удалить заказ #{order.id.slice(-4)}?
-                  Это действие нельзя отменить.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              
-              <AlertDialogFooter>
-                <AlertDialogCancel>Отмена</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete}>
-                  Удалить
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowEditDialog(true)}
+          >
+            <Edit className="h-4 w-4 mr-1" />
+            Редактировать
+          </Button>
         </CardFooter>
       </Card>
-      
+
       <OrderForm
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        initialData={order}
+        order={order}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
       />
+
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Удалить заказ
+            </DialogTitle>
+            <DialogDescription>
+              Вы уверены, что хотите удалить этот заказ? Это действие нельзя отменить.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:justify-start">
+            <Button variant="ghost" onClick={() => setShowDeleteDialog(false)}>
+              Отмена
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Удалить
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

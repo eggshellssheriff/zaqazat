@@ -7,13 +7,13 @@ import { ProductCard } from "@/components/ProductCard";
 import { ProductForm } from "@/components/ProductForm";
 import { Search } from "@/components/Search";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Grid2X2, List, ArrowUp } from "lucide-react";
+import { FunctionPanel } from "@/components/FunctionPanel";
+import { Plus, ArrowUp } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Products = () => {
   const { products, filteredProducts } = useApp();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("list"); // Default to list view
   const [showScrollTop, setShowScrollTop] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
@@ -67,24 +67,6 @@ const Products = () => {
             </div>
             
             <div className="flex items-center gap-2 w-full justify-between mt-3 md:mt-0 md:justify-end">
-              <div className="flex">
-                <Button
-                  variant={viewMode === "grid" ? "default" : "outline"}
-                  size="icon"
-                  onClick={() => setViewMode("grid")}
-                  className="h-8 w-8"
-                >
-                  <Grid2X2 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === "list" ? "default" : "outline"}
-                  size="icon"
-                  onClick={() => setViewMode("list")}
-                  className="h-8 w-8"
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-              </div>
               <Search type="products" className="w-full md:w-auto" />
             </div>
           </div>
@@ -109,22 +91,18 @@ const Products = () => {
             </p>
           </div>
         ) : (
-          viewMode === "grid" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} viewMode="grid" />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          )
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} viewMode="grid" />
+            ))}
+          </div>
         )}
       </div>
 
+      {/* Function Panel */}
+      <FunctionPanel />
+
+      {/* Scroll to top button */}
       {showScrollTop && (
         <Button
           variant="outline"

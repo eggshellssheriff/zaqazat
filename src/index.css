@@ -28,11 +28,11 @@
   }
 
   .dark {
-    --background: 300 12% 7%;
+    --background: 0 0% 4%;
     --foreground: 0 0% 98%;
-    --card: 295 10% 10%;
+    --card: 0 0% 6%;
     --card-foreground: 0 0% 98%;
-    --popover: 300 12% 4%;
+    --popover: 0 0% 4%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 100%;
     --primary-foreground: 0 0% 0%;
@@ -58,7 +58,10 @@
     @apply bg-background text-foreground;
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
+    -webkit-overflow-scrolling: touch;
   }
+
+  /* Changed to allow scrolling */
   html, body {
     @apply overflow-hidden;
   }
@@ -89,6 +92,12 @@
   width: 100%;
   overflow-y: auto;
   animation: modalFadeIn 0.2s ease-out;
+}
+
+/* Make sure content is scrollable */
+.layout-content {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
 }
 
 @keyframes modalFadeIn {
@@ -122,6 +131,66 @@
   transform: translateX(-50%) translateY(-5px) !important;
 }
 
+/* Function panel styles */
+.function-panel {
+  position: fixed;
+  right: 1rem;
+  top: 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 100;
+  background-color: var(--background);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease-out;
+}
+
+.function-panel-button {
+  border-radius: 50% !important;
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.function-panel-collapsed {
+  transform: translateX(calc(100% - 3.5rem));
+}
+
+.function-panel-collapsed .function-panel-item:not(:first-child) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Currency converter styles */
+.currency-converter {
+  position: fixed;
+  right: 1rem;
+  bottom: 5rem;
+  z-index: 100;
+  width: 300px;
+  background-color: var(--card);
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes toastSlideUp {
   from {
     opacity: 0;
@@ -143,4 +212,29 @@
   .compact-toast {
     max-width: 90vw !important;
   }
+
+  .function-panel {
+    right: 0.5rem;
+    top: 4rem;
+  }
+
+  .currency-converter {
+    right: 0.5rem;
+    bottom: 4rem;
+    width: 90%;
+    max-width: 300px;
+  }
+}
+
+/* Image optimization for lazy loading */
+.lazy-image {
+  transition: opacity 0.3s ease;
+}
+
+.lazy-image.loading {
+  opacity: 0;
+}
+
+.lazy-image.loaded {
+  opacity: 1;
 }

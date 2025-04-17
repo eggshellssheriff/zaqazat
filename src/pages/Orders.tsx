@@ -7,13 +7,15 @@ import { OrderCard } from "@/components/OrderCard";
 import { OrderForm } from "@/components/OrderForm";
 import { Search } from "@/components/Search";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Grid2X2, List, ArrowUp } from "lucide-react";
+import { FunctionPanel } from "@/components/FunctionPanel";
+import { CurrencyConverter } from "@/components/CurrencyConverter";
+import { Plus, ArrowUp, DollarSign } from "lucide-react";
 
 const Orders = () => {
-  const { orders, products, filteredOrders } = useApp();
+  const { orders, products, filteredOrders, settings } = useApp();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid"); // Default to grid view
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showConverter, setShowConverter] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Обработчик прокрутки для кнопки "вверх"
@@ -61,24 +63,6 @@ const Orders = () => {
                 Создать заказ
               </Button>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant={viewMode === "grid" ? "default" : "outline"}
-                size="icon"
-                onClick={() => setViewMode("grid")}
-                className="h-8 w-8"
-              >
-                <Grid2X2 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "default" : "outline"}
-                size="icon"
-                onClick={() => setViewMode("list")}
-                className="h-8 w-8"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -114,22 +98,36 @@ const Orders = () => {
             </p>
           </div>
         ) : (
-          viewMode === "grid" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredOrders.map((order) => (
-                <OrderCard key={order.id} order={order} />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {filteredOrders.map((order) => (
-                <OrderCard key={order.id} order={order} />
-              ))}
-            </div>
-          )
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredOrders.map((order) => (
+              <OrderCard key={order.id} order={order} />
+            ))}
+          </div>
         )}
       </div>
 
+      {/* Function Panel */}
+      <FunctionPanel />
+
+      {/* Currency Converter Button (only shown if enabled in settings) */}
+      {settings.showCurrencyConverter && (
+        <Button
+          variant="outline"
+          size="icon"
+          className="fixed bottom-16 right-6 h-10 w-10 rounded-full shadow-md z-50 bg-secondary"
+          onClick={() => setShowConverter(!showConverter)}
+          title="Конвертер валют"
+        >
+          <DollarSign className="h-5 w-5" />
+        </Button>
+      )}
+
+      {/* Currency Converter */}
+      {showConverter && settings.showCurrencyConverter && (
+        <CurrencyConverter onClose={() => setShowConverter(false)} />
+      )}
+
+      {/* Scroll to top button */}
       {showScrollTop && (
         <Button
           variant="outline"

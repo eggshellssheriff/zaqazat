@@ -17,6 +17,8 @@ type Order = {
   date: string;
   status: string;
   phoneNumber?: string;
+  description?: string;
+  image?: string | null;
   products: Array<{
     productId: string;
     name: string;
@@ -37,6 +39,12 @@ type SearchFilters = {
   maxQuantity?: number;
 };
 
+type SortOption = "default" | "alphabetical" | "priceLowToHigh" | "priceHighToLow";
+
+type Settings = {
+  showCurrencyConverter: boolean;
+};
+
 interface AppContextType {
   products: Product[];
   orders: Order[];
@@ -45,6 +53,8 @@ interface AppContextType {
   filteredProducts: Product[];
   filteredOrders: Order[];
   searchFilters: SearchFilters;
+  sortOption: SortOption;
+  settings: Settings;
   addProduct: (product: Omit<Product, "id">) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (id: string) => void;
@@ -56,6 +66,8 @@ interface AppContextType {
   toggleTheme: () => void;
   setSidebarOpen: (open: boolean) => void;
   setSearchFilters: (filters: SearchFilters) => void;
+  setSortOption: (option: SortOption) => void;
+  updateSettings: (newSettings: Partial<Settings>) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -92,46 +104,92 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     maxQuantity: undefined
   });
 
-  // Filtered products based on search and filters
-  const filteredProducts = products.filter(product => {
-    if (searchFilters.type !== "products") return true;
-    
-    const matchesQuery = searchFilters.query.trim() === "" || 
-      product.name.toLowerCase().includes(searchFilters.query.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchFilters.query.toLowerCase()) ||
-      product.price.toString().includes(searchFilters.query);
-    
-    const matchesPrice = 
-      (searchFilters.minPrice === undefined || product.price >= searchFilters.minPrice) &&
-      (searchFilters.maxPrice === undefined || product.price <= searchFilters.maxPrice);
-    
-    const matchesQuantity = 
-      (searchFilters.minQuantity === undefined || product.quantity >= searchFilters.minQuantity) &&
-      (searchFilters.maxQuantity === undefined || product.quantity <= searchFilters.maxQuantity);
-    
-    return matchesQuery && matchesPrice && matchesQuantity;
-  });
+  const [sortOption, setSortOption] = useState<SortOption>("default");
 
-  // Filtered orders based on search and filters
-  const filteredOrders = orders.filter(order => {
-    if (searchFilters.type !== "orders") return true;
-    
-    const matchesNameOrId = searchFilters.query.trim() === "" || 
-      order.customerName.toLowerCase().includes(searchFilters.query.toLowerCase()) ||
-      order.id.includes(searchFilters.query);
-    
-    // Search in products inside the order
-    const matchesProductNames = searchFilters.query.trim() === "" || 
-      order.products.some(p => p.name.toLowerCase().includes(searchFilters.query.toLowerCase()));
-    
-    // Filter by order total price
-    const matchesPrice = 
-      (searchFilters.minPrice === undefined || order.totalAmount >= searchFilters.minPrice) &&
-      (searchFilters.maxPrice === undefined || order.totalAmount <= searchFilters.maxPrice);
-    
-    return (matchesNameOrId || matchesProductNames) && matchesPrice;
+  const [settings, setSettings] = useState<Settings>(() => {
+    const savedSettings = localStorage.getItem("settings");
+    return savedSettings 
+      ? JSON.parse(savedSettings) 
+      : { showCurrencyConverter: true };
   });
+  
+  // Helper function to apply sorting
+  const applySorting = <T extends Product | Order>(items: T[], option: SortOption): T[] => {
+    if (option === "default") return items;
+    
+    return [...items].sort((a, b) => {
+      switch (option) {
+        case "alphabetical":
+          // For orders, sort by customer name; for products, sort by name
+          const aName = 'customerName' in a ? a.customerName : a.name;
+          const bName = 'customerName' in b ? b.customerName : b.name;
+          return aName.localeCompare(bName);
+        
+        case "priceLowToHigh":
+          // For orders, sort by total amount; for products, sort by price
+          const aPrice = 'totalAmount' in a ? a.totalAmount : a.price;
+          const bPrice = 'totalAmount' in b ? b.totalAmount : b.price;
+          return aPrice - bPrice;
+        
+        case "priceHighToLow":
+          // For orders, sort by total amount; for products, sort by price
+          const aPriceDesc = 'totalAmount' in a ? a.totalAmount : a.price;
+          const bPriceDesc = 'totalAmount' in b ? b.totalAmount : b.price;
+          return bPriceDesc - aPriceDesc;
+        
+        default:
+          return 0;
+      }
+    });
+  };
 
+  // Filtered products based on search and filters, with sorting applied
+  const filteredProducts = applySorting(
+    products.filter(product => {
+      if (searchFilters.type !== "products") return true;
+      
+      const matchesQuery = searchFilters.query.trim() === "" || 
+        product.name.toLowerCase().includes(searchFilters.query.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchFilters.query.toLowerCase()) ||
+        product.price.toString().includes(searchFilters.query);
+      
+      const matchesPrice = 
+        (searchFilters.minPrice === undefined || product.price >= searchFilters.minPrice) &&
+        (searchFilters.maxPrice === undefined || product.price <= searchFilters.maxPrice);
+      
+      const matchesQuantity = 
+        (searchFilters.minQuantity === undefined || product.quantity >= searchFilters.minQuantity) &&
+        (searchFilters.maxQuantity === undefined || product.quantity <= searchFilters.maxQuantity);
+      
+      return matchesQuery && matchesPrice && matchesQuantity;
+    }),
+    sortOption
+  );
+
+  // Filtered orders based on search and filters, with sorting applied
+  const filteredOrders = applySorting(
+    orders.filter(order => {
+      if (searchFilters.type !== "orders") return true;
+      
+      const matchesNameOrId = searchFilters.query.trim() === "" || 
+        order.customerName.toLowerCase().includes(searchFilters.query.toLowerCase()) ||
+        order.id.includes(searchFilters.query);
+      
+      // Search in products inside the order
+      const matchesProductNames = searchFilters.query.trim() === "" || 
+        order.products.some(p => p.name.toLowerCase().includes(searchFilters.query.toLowerCase()));
+      
+      // Filter by order total price
+      const matchesPrice = 
+        (searchFilters.minPrice === undefined || order.totalAmount >= searchFilters.minPrice) &&
+        (searchFilters.maxPrice === undefined || order.totalAmount <= searchFilters.maxPrice);
+      
+      return (matchesNameOrId || matchesProductNames) && matchesPrice;
+    }),
+    sortOption
+  );
+
+  // Save to localStorage effects
   useEffect(() => {
     localStorage.setItem("products", JSON.stringify(products));
   }, [products]);
@@ -144,6 +202,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem("theme", theme);
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem("settings", JSON.stringify(settings));
+  }, [settings]);
+
+  const updateSettings = (newSettings: Partial<Settings>) => {
+    setSettings(prev => ({ ...prev, ...newSettings }));
+  };
 
   const addProduct = (product: Omit<Product, "id">) => {
     const newProduct = {
@@ -276,6 +342,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         filteredProducts,
         filteredOrders,
         searchFilters,
+        sortOption,
+        settings,
         addProduct,
         updateProduct,
         deleteProduct,
@@ -287,6 +355,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleTheme,
         setSidebarOpen,
         setSearchFilters,
+        setSortOption,
+        updateSettings,
       }}
     >
       {children}

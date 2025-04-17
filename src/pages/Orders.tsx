@@ -10,18 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Grid2X2, List, ArrowUp } from "lucide-react";
 
 const Orders = () => {
-  const { orders, products } = useApp();
+  const { orders, products, filteredOrders } = useApp();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid"); // Default to grid view
   const [showScrollTop, setShowScrollTop] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-
-  const filteredOrders = searchQuery
-    ? orders.filter((order) =>
-        order.customerName.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : orders;
 
   // Обработчик прокрутки для кнопки "вверх"
   const handleScroll = () => {
@@ -112,6 +105,13 @@ const Orders = () => {
                 Сначала добавьте товары, чтобы создать заказ
               </p>
             )}
+          </div>
+        ) : filteredOrders.length === 0 ? (
+          <div className="border rounded-lg p-8 text-center">
+            <h3 className="text-lg font-medium mb-2">Заказы не найдены</h3>
+            <p className="text-muted-foreground">
+              Попробуйте изменить параметры поиска
+            </p>
           </div>
         ) : (
           viewMode === "grid" ? (

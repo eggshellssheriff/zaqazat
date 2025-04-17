@@ -28,11 +28,23 @@ type Order = {
 
 type Theme = "light" | "dark";
 
+type SearchFilters = {
+  type: "products" | "orders";
+  query: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minQuantity?: number;
+  maxQuantity?: number;
+};
+
 interface AppContextType {
   products: Product[];
   orders: Order[];
   theme: Theme;
   sidebarOpen: boolean;
+  filteredProducts: Product[];
+  filteredOrders: Order[];
+  searchFilters: SearchFilters;
   addProduct: (product: Omit<Product, "id">) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (id: string) => void;
@@ -43,6 +55,7 @@ interface AppContextType {
   deleteOrder: (id: string) => void;
   toggleTheme: () => void;
   setSidebarOpen: (open: boolean) => void;
+  setSearchFilters: (filters: SearchFilters) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -69,6 +82,55 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    type: "products",
+    query: "",
+    minPrice: undefined,
+    maxPrice: undefined,
+    minQuantity: undefined,
+    maxQuantity: undefined
+  });
+
+  // Filtered products based on search and filters
+  const filteredProducts = products.filter(product => {
+    if (searchFilters.type !== "products") return true;
+    
+    const matchesQuery = searchFilters.query.trim() === "" || 
+      product.name.toLowerCase().includes(searchFilters.query.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchFilters.query.toLowerCase()) ||
+      product.price.toString().includes(searchFilters.query);
+    
+    const matchesPrice = 
+      (searchFilters.minPrice === undefined || product.price >= searchFilters.minPrice) &&
+      (searchFilters.maxPrice === undefined || product.price <= searchFilters.maxPrice);
+    
+    const matchesQuantity = 
+      (searchFilters.minQuantity === undefined || product.quantity >= searchFilters.minQuantity) &&
+      (searchFilters.maxQuantity === undefined || product.quantity <= searchFilters.maxQuantity);
+    
+    return matchesQuery && matchesPrice && matchesQuantity;
+  });
+
+  // Filtered orders based on search and filters
+  const filteredOrders = orders.filter(order => {
+    if (searchFilters.type !== "orders") return true;
+    
+    const matchesNameOrId = searchFilters.query.trim() === "" || 
+      order.customerName.toLowerCase().includes(searchFilters.query.toLowerCase()) ||
+      order.id.includes(searchFilters.query);
+    
+    // Search in products inside the order
+    const matchesProductNames = searchFilters.query.trim() === "" || 
+      order.products.some(p => p.name.toLowerCase().includes(searchFilters.query.toLowerCase()));
+    
+    // Filter by order total price
+    const matchesPrice = 
+      (searchFilters.minPrice === undefined || order.totalAmount >= searchFilters.minPrice) &&
+      (searchFilters.maxPrice === undefined || order.totalAmount <= searchFilters.maxPrice);
+    
+    return (matchesNameOrId || matchesProductNames) && matchesPrice;
+  });
 
   useEffect(() => {
     localStorage.setItem("products", JSON.stringify(products));
@@ -211,6 +273,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         orders,
         theme,
         sidebarOpen,
+        filteredProducts,
+        filteredOrders,
+        searchFilters,
         addProduct,
         updateProduct,
         deleteProduct,
@@ -221,6 +286,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteOrder,
         toggleTheme,
         setSidebarOpen,
+        setSearchFilters,
       }}
     >
       {children}

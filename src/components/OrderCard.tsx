@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useApp } from "@/lib/context";
 import {
@@ -89,35 +90,6 @@ export function OrderCard({ order }: OrderCardProps) {
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <CardTitle className="text-lg">{order.customerName}</CardTitle>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 pl-2 pr-1"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Badge variant={getBadgeVariant(order.status)} className="mr-1">
-                    {order.status}
-                  </Badge>
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {statuses.map((status) => (
-                  <DropdownMenuItem
-                    key={status}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleStatusChange(status);
-                    }}
-                    className={status === order.status ? "bg-accent font-medium" : ""}
-                  >
-                    {status}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
           <CardDescription className="flex items-center gap-1 text-sm">
             <Calendar className="h-3 w-3" />
@@ -150,17 +122,50 @@ export function OrderCard({ order }: OrderCardProps) {
             <Trash className="h-4 w-4 mr-1" />
             Удалить
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowEditDialog(true);
-            }}
-          >
-            <Edit className="h-4 w-4 mr-1" />
-            Редактировать
-          </Button>
+          
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowEditDialog(true);
+              }}
+            >
+              <Edit className="h-4 w-4 mr-1" />
+              Редактировать
+            </Button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 pl-2 pr-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Badge variant={getBadgeVariant(order.status)} className="mr-1">
+                    {order.status}
+                  </Badge>
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {statuses.map((status) => (
+                  <DropdownMenuItem
+                    key={status}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleStatusChange(status);
+                    }}
+                    className={status === order.status ? "bg-accent font-medium" : ""}
+                  >
+                    {status}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </CardFooter>
       </Card>
 

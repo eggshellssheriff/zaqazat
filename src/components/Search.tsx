@@ -8,87 +8,39 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronsUpDown, Filter, Search as SearchIcon, X } from "lucide-react";
+import { Filter, Search as SearchIcon, X } from "lucide-react";
 import { useApp } from "@/lib/context";
-import { useNavigate } from "react-router-dom";
 
 interface SearchProps {
   type: "products" | "orders";
 }
 
 export function Search({ type }: SearchProps) {
-  const { products, orders } = useApp();
-  const navigate = useNavigate();
+  const { products, orders, setSearchFilters } = useApp();
   const [query, setQuery] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [minQuantity, setMinQuantity] = useState("");
   const [maxQuantity, setMaxQuantity] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
 
-  // Dynamic search effect that updates as the user types or changes filters
+  // Apply filters as user types or changes filter values
   useEffect(() => {
-    if (query.trim() || minPrice || maxPrice || minQuantity || maxQuantity) {
-      let results: any[] = [];
-
-      if (type === "products") {
-        results = products.filter((product) => {
-          // Enhanced search by name to include partial matches
-          const matchesQuery = query.trim() === "" || 
-            product.name.toLowerCase().includes(query.toLowerCase()) ||
-            product.description.toLowerCase().includes(query.toLowerCase()) ||
-            product.price.toString().includes(query); // Search by price
-          
-          const matchesPrice = 
-            (minPrice === "" || product.price >= parseFloat(minPrice)) &&
-            (maxPrice === "" || product.price <= parseFloat(maxPrice));
-          
-          const matchesQuantity = 
-            (minQuantity === "" || product.quantity >= parseInt(minQuantity)) &&
-            (maxQuantity === "" || product.quantity <= parseInt(maxQuantity));
-          
-          return matchesQuery && matchesPrice && matchesQuantity;
-        });
-      } else {
-        results = orders.filter((order) => {
-          // Enhanced search by customer name or by product name within orders
-          const matchesNameOrId = query.trim() === "" || 
-            order.customerName.toLowerCase().includes(query.toLowerCase()) ||
-            order.id.includes(query);
-          
-          // Search in products inside the order
-          const matchesProductNames = order.products.some(p => 
-            p.name.toLowerCase().includes(query.toLowerCase())
-          );
-          
-          // Search by order total price
-          const matchesPrice = query.trim() === "" || 
-            order.totalAmount.toString().includes(query) ||
-            (minPrice === "" || order.totalAmount >= parseFloat(minPrice)) &&
-            (maxPrice === "" || order.totalAmount <= parseFloat(maxPrice));
-          
-          return (matchesNameOrId || matchesProductNames) && matchesPrice;
-        });
-      }
-
-      setSearchResults(results);
-    } else {
-      setSearchResults([]);
-    }
-  }, [query, minPrice, maxPrice, minQuantity, maxQuantity, products, orders, type]);
+    setSearchFilters({
+      type,
+      query,
+      minPrice: minPrice ? parseFloat(minPrice) : undefined,
+      maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+      minQuantity: minQuantity ? parseInt(minQuantity) : undefined,
+      maxQuantity: maxQuantity ? parseInt(maxQuantity) : undefined
+    });
+  }, [query, minPrice, maxPrice, minQuantity, maxQuantity, type, setSearchFilters]);
 
   const clearFilters = () => {
     setMinPrice("");
     setMaxPrice("");
     setMinQuantity("");
     setMaxQuantity("");
-  };
-
-  const handleItemClick = (id: string) => {
-    console.log(`Clicked on item with ID: ${id}`);
-    setSearchResults([]);
-    setQuery("");
   };
 
   return (
@@ -185,36 +137,6 @@ export function Search({ type }: SearchProps) {
           </PopoverContent>
         </Popover>
       </div>
-      
-      {searchResults.length > 0 && query && (
-        <div className="absolute top-full left-0 right-0 mt-1 border rounded-md bg-background shadow-lg z-10 max-h-64 overflow-auto">
-          {searchResults.map((item) => (
-            <button
-              key={item.id}
-              className="w-full px-4 py-2 text-left hover:bg-muted flex items-center justify-between"
-              onClick={() => handleItemClick(item.id)}
-            >
-              <div>
-                {type === "products" ? (
-                  <>
-                    <div className="font-medium">{item.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {item.price.toFixed(0)} тг · {item.quantity} шт.
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="font-medium">Заказ #{item.id.slice(-4)}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {item.customerName} · {item.totalAmount.toFixed(0)} тг
-                    </div>
-                  </>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

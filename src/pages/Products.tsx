@@ -3,26 +3,18 @@ import { useState, useRef, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { useApp } from "@/lib/context";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductForm } from "@/components/ProductForm";
 import { Search } from "@/components/Search";
+import { Badge } from "@/components/ui/badge";
 import { Plus, Grid2X2, List, ArrowUp } from "lucide-react";
-import { toast } from "@/components/ui/use-toast";
 
 const Products = () => {
-  const { products } = useApp();
+  const { products, filteredProducts } = useApp();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list"); // Default to list view
   const [showScrollTop, setShowScrollTop] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-
-  const filteredProducts = searchQuery
-    ? products.filter((product) =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : products;
 
   // Обработчик прокрутки для кнопки "вверх"
   const handleScroll = () => {
@@ -58,7 +50,7 @@ const Products = () => {
               <Badge variant="outline" className="mr-2">
                 {products.length}
               </Badge>
-              <Button 
+              <Button
                 onClick={() => setAddDialogOpen(true)}
                 className="bg-green-500 hover:bg-green-600"
                 size="sm"
@@ -96,24 +88,31 @@ const Products = () => {
           <div className="border rounded-lg p-8 text-center">
             <h3 className="text-lg font-medium mb-2">Нет товаров</h3>
             <p className="text-muted-foreground mb-4">
-              Добавьте первый товар, чтобы начать управление инвентарем
+              Добавьте первый товар, чтобы начать управление
             </p>
-            <Button onClick={() => setAddDialogOpen(true)}>
+            <Button onClick={() => setAddDialogOpen(true)} className="bg-green-500 hover:bg-green-600">
               <Plus className="mr-2 h-4 w-4" />
               Добавить товар
             </Button>
           </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="border rounded-lg p-8 text-center">
+            <h3 className="text-lg font-medium mb-2">Товары не найдены</h3>
+            <p className="text-muted-foreground">
+              Попробуйте изменить параметры поиска
+            </p>
+          </div>
         ) : (
           viewMode === "grid" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} viewMode="grid" />
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
           ) : (
             <div className="flex flex-col gap-2">
               {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} viewMode="list" />
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
           )

@@ -23,11 +23,11 @@ interface OrderModalProps {
 }
 
 export function OrderModal({ order, onClose }: OrderModalProps) {
-  // Format the date to a more readable format
+  // Format the date to DD.MM.YY format
   const formattedDate = new Date(order.date).toLocaleDateString("ru-RU", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit"
   });
 
   return (

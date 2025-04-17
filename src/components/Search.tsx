@@ -27,6 +27,7 @@ export function Search({ type }: SearchProps) {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
 
+  // Dynamic search effect that updates as the user types or changes filters
   useEffect(() => {
     if (query.trim() || minPrice || maxPrice || minQuantity || maxQuantity) {
       let results: any[] = [];
@@ -85,8 +86,6 @@ export function Search({ type }: SearchProps) {
   };
 
   const handleItemClick = (id: string) => {
-    // This is a placeholder for future functionality
-    // Could navigate to a detailed view
     console.log(`Clicked on item with ID: ${id}`);
     setSearchResults([]);
     setQuery("");

@@ -12,6 +12,8 @@ const compactToast = (props: Parameters<typeof originalToast>[0]) => {
     className: `${props.className || ''} compact-toast swipeable-toast`,
     // Уменьшаем время отображения
     duration: props.duration || 3000,
+    // Позиционируем внизу экрана
+    position: "bottom",
   });
 };
 

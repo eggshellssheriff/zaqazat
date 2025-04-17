@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useApp } from "@/lib/context";
 import {
@@ -54,11 +53,11 @@ export function OrderCard({ order }: OrderCardProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
-  // Format the date to a more readable format
+  // Format the date to DD.MM.YY format
   const formattedDate = new Date(order.date).toLocaleDateString("ru-RU", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit"
   });
 
   const handleDelete = () => {

@@ -2,8 +2,8 @@
 import { useApp } from "@/lib/context";
 import { Button } from "@/components/ui/button";
 import { 
-  Package,
   ShoppingCart,
+  Package,
   Settings,
   Sun,
   Moon,
@@ -36,16 +36,6 @@ export function Sidebar() {
           </div>
           
           <nav className="flex-1 p-4 space-y-1">
-            <Link to="/" onClick={closeSidebar}>
-              <Button
-                variant="ghost"
-                className="w-full justify-start"
-              >
-                <Package className="mr-2 h-4 w-4" />
-                Товары
-              </Button>
-            </Link>
-            
             <Link to="/orders" onClick={closeSidebar}>
               <Button
                 variant="ghost"
@@ -53,6 +43,16 @@ export function Sidebar() {
               >
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Заказы
+              </Button>
+            </Link>
+            
+            <Link to="/products" onClick={closeSidebar}>
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+              >
+                <Package className="mr-2 h-4 w-4" />
+                Товары
               </Button>
             </Link>
             

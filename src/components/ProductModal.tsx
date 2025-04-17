@@ -54,8 +54,8 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
         
         <CardContent className="space-y-4">
           <div className="flex justify-between items-start">
-            <h3 className="font-medium text-lg">{product.name}</h3>
-            <p className="font-semibold text-right">{product.price.toFixed(0)} тг</p>
+            <h3 className="font-medium text-lg break-words pr-2 max-w-[70%]">{product.name}</h3>
+            <p className="font-semibold text-right whitespace-nowrap">{product.price.toFixed(0)} тг</p>
           </div>
           
           <div className="flex items-center justify-between">
@@ -86,7 +86,7 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
           
           <div>
             <h4 className="text-sm font-medium mb-1">Описание:</h4>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground break-words">
               {product.description || "Нет описания"}
             </p>
           </div>

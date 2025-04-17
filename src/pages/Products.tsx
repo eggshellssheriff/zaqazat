@@ -8,6 +8,7 @@ import { ProductForm } from "@/components/ProductForm";
 import { Search } from "@/components/Search";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Grid2X2, List, ArrowUp } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Products = () => {
   const { products, filteredProducts } = useApp();
@@ -15,6 +16,7 @@ const Products = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("list"); // Default to list view
   const [showScrollTop, setShowScrollTop] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   // Обработчик прокрутки для кнопки "вверх"
   const handleScroll = () => {
@@ -44,48 +46,52 @@ const Products = () => {
     <Layout title="Товары" contentRef={contentRef}>
       <div className="flex flex-col gap-6">
         <div className="sticky top-0 z-10 bg-background pt-2 pb-4 flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold mr-3">Товары</h1>
-              <Badge variant="outline" className="mr-2">
-                {products.length}
-              </Badge>
-              <Button
-                onClick={() => setAddDialogOpen(true)}
-                className="bg-green-500 hover:bg-green-600"
-                size="sm"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Добавить товар
-              </Button>
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-3 w-full">
+            <div className="flex items-center w-full justify-between">
+              <div className="flex items-center">
+                <h1 className="text-2xl font-bold mr-3">Товары</h1>
+                <Badge variant="outline" className="mr-2">
+                  {products.length}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => setAddDialogOpen(true)}
+                  className="bg-green-500 hover:bg-green-600"
+                  size="sm"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  {!isMobile && "Добавить товар"}
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant={viewMode === "grid" ? "default" : "outline"}
-                size="icon"
-                onClick={() => setViewMode("grid")}
-                className="h-8 w-8"
-              >
-                <Grid2X2 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "default" : "outline"}
-                size="icon"
-                onClick={() => setViewMode("list")}
-                className="h-8 w-8"
-              >
-                <List className="h-4 w-4" />
-              </Button>
+            
+            <div className="flex items-center gap-2 w-full justify-between mt-3 md:mt-0 md:justify-end">
+              <div className="flex">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => setViewMode("grid")}
+                  className="h-8 w-8"
+                >
+                  <Grid2X2 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => setViewMode("list")}
+                  className="h-8 w-8"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+              <Search type="products" className="w-full md:w-auto" />
             </div>
-          </div>
-
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <Search type="products" />
           </div>
         </div>
 
         {products.length === 0 ? (
-          <div className="border rounded-lg p-8 text-center">
+          <div className="border rounded-lg p-4 sm:p-8 text-center">
             <h3 className="text-lg font-medium mb-2">Нет товаров</h3>
             <p className="text-muted-foreground mb-4">
               Добавьте первый товар, чтобы начать управление
@@ -96,7 +102,7 @@ const Products = () => {
             </Button>
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="border rounded-lg p-8 text-center">
+          <div className="border rounded-lg p-4 sm:p-8 text-center">
             <h3 className="text-lg font-medium mb-2">Товары не найдены</h3>
             <p className="text-muted-foreground">
               Попробуйте изменить параметры поиска
@@ -106,7 +112,7 @@ const Products = () => {
           viewMode === "grid" ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard key={product.id} product={product} viewMode="grid" />
               ))}
             </div>
           ) : (

@@ -43,13 +43,13 @@ export function OrderModal({ order, onClose }: OrderModalProps) {
             <X className="h-4 w-4" />
           </Button>
           
-          <h2 className="text-xl font-semibold">{order.customerName}</h2>
+          <h2 className="text-xl font-semibold truncate pr-8">{order.customerName}</h2>
           <div className="flex items-center gap-2">
             <Badge>{order.status}</Badge>
             <span className="text-sm text-muted-foreground">{formattedDate}</span>
           </div>
           {order.phoneNumber && (
-            <p className="text-sm mt-2">Телефон: {order.phoneNumber}</p>
+            <p className="text-sm mt-2 truncate">Телефон: {order.phoneNumber}</p>
           )}
         </CardHeader>
         
@@ -59,13 +59,13 @@ export function OrderModal({ order, onClose }: OrderModalProps) {
             <ul className="space-y-2">
               {order.products.map((product) => (
                 <li key={product.productId} className="flex justify-between text-sm border-b pb-2">
-                  <div>
-                    <span className="font-medium">{product.name}</span>
+                  <div className="max-w-[70%]">
+                    <span className="font-medium truncate block">{product.name}</span>
                     <div className="text-xs text-muted-foreground">
                       {product.quantity} шт.
                     </div>
                   </div>
-                  <span className="font-medium">{product.price.toFixed(0)} тг</span>
+                  <span className="font-medium whitespace-nowrap">{product.price.toFixed(0)} тг</span>
                 </li>
               ))}
             </ul>

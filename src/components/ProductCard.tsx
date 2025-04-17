@@ -66,7 +66,7 @@ export function ProductCard({ product, viewMode = "list" }: ProductCardProps) {
 
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-start">
-                <div>
+                <div className="max-w-[60%]">
                   <h3 className="font-medium text-base truncate">{product.name}</h3>
                 </div>
                 <div className="flex flex-col items-end ml-2">
@@ -104,14 +104,14 @@ export function ProductCard({ product, viewMode = "list" }: ProductCardProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-7 text-xs"
+                  className="h-7 w-7 p-0"
                   onClick={(e) => {
                     e.stopPropagation();
                     setEditDialogOpen(true);
                   }}
+                  title="Изменить"
                 >
-                  <Pencil className="h-3 w-3 mr-1" />
-                  Изменить
+                  <Pencil className="h-3 w-3" />
                 </Button>
                 
                 <AlertDialog>
@@ -119,11 +119,11 @@ export function ProductCard({ product, viewMode = "list" }: ProductCardProps) {
                     <Button 
                       variant="destructive" 
                       size="sm" 
-                      className="h-7 text-xs"
+                      className="h-7 w-7 p-0"
                       onClick={(e) => e.stopPropagation()}
+                      title="Удалить"
                     >
-                      <Trash2 className="h-3 w-3 mr-1" />
-                      Удалить
+                      <Trash2 className="h-3 w-3" />
                     </Button>
                   </AlertDialogTrigger>
                   
@@ -181,7 +181,7 @@ export function ProductCard({ product, viewMode = "list" }: ProductCardProps) {
         
         <CardContent className="flex-1 p-4">
           <div className="flex justify-between items-start">
-            <h3 className="font-medium text-lg">{product.name}</h3>
+            <h3 className="font-medium text-lg truncate max-w-[60%]">{product.name}</h3>
             <p className="font-semibold text-right">{product.price.toFixed(0)} тг</p>
           </div>
         </CardContent>
@@ -224,14 +224,14 @@ export function ProductCard({ product, viewMode = "list" }: ProductCardProps) {
             <Button
               variant="outline"
               size="sm"
-              className="flex-1"
+              className="w-10 p-0"
               onClick={(e) => {
                 e.stopPropagation();
                 setEditDialogOpen(true);
               }}
+              title="Изменить"
             >
-              <Pencil className="h-4 w-4 mr-2" />
-              Изменить
+              <Pencil className="h-4 w-4" />
             </Button>
             
             <AlertDialog>
@@ -239,11 +239,11 @@ export function ProductCard({ product, viewMode = "list" }: ProductCardProps) {
                 <Button 
                   variant="destructive" 
                   size="sm" 
-                  className="flex-1"
+                  className="w-10 p-0"
                   onClick={(e) => e.stopPropagation()}
+                  title="Удалить"
                 >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Удалить
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </AlertDialogTrigger>
               

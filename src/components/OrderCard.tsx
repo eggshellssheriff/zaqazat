@@ -86,10 +86,10 @@ export function OrderCard({ order }: OrderCardProps) {
 
   return (
     <>
-      <Card className="overflow-hidden cursor-pointer" onClick={() => setShowDetailsModal(true)}>
+      <Card className="overflow-hidden cursor-pointer relative" onClick={() => setShowDetailsModal(true)}>
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
-            <CardTitle className="text-lg">{order.customerName}</CardTitle>
+            <CardTitle className="text-lg truncate max-w-[70%]">{order.customerName}</CardTitle>
           </div>
           <CardDescription className="flex items-center gap-1 text-sm">
             <Calendar className="h-3 w-3" />
@@ -98,74 +98,75 @@ export function OrderCard({ order }: OrderCardProps) {
         </CardHeader>
         <CardContent className="pb-2">
           <div className="space-y-1">
-            <div className="text-sm">
+            <div className="text-sm truncate">
               {order.products[0]?.name || "Нет товаров"}
               {order.products.length > 1 && ` и ещё ${order.products.length - 1} товар(ов)`}
             </div>
             {order.phoneNumber && (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-muted-foreground truncate">
                 Телефон: {order.phoneNumber}
               </div>
             )}
           </div>
         </CardContent>
         <CardFooter className="flex justify-between pt-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-destructive"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowDeleteDialog(true);
-            }}
-          >
-            <Trash className="h-4 w-4 mr-1" />
-            Удалить
-          </Button>
-          
           <div className="flex gap-2">
             <Button
               variant="ghost"
               size="sm"
+              className="h-8 w-8 p-0"
+              title="Удалить"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDeleteDialog(true);
+              }}
+            >
+              <Trash className="h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              title="Редактировать"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowEditDialog(true);
               }}
             >
-              <Edit className="h-4 w-4 mr-1" />
-              Редактировать
+              <Edit className="h-4 w-4" />
             </Button>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 pl-2 pr-1"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Badge variant={getBadgeVariant(order.status)} className="mr-1">
-                    {order.status}
-                  </Badge>
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {statuses.map((status) => (
-                  <DropdownMenuItem
-                    key={status}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleStatusChange(status);
-                    }}
-                    className={status === order.status ? "bg-accent font-medium" : ""}
-                  >
-                    {status}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Badge variant={getBadgeVariant(order.status)} className="mr-1">
+                  {order.status}
+                </Badge>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {statuses.map((status) => (
+                <DropdownMenuItem
+                  key={status}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleStatusChange(status);
+                  }}
+                  className={status === order.status ? "bg-accent font-medium" : ""}
+                >
+                  {status}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </CardFooter>
       </Card>
 
@@ -176,7 +177,7 @@ export function OrderCard({ order }: OrderCardProps) {
       />
 
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-destructive" />

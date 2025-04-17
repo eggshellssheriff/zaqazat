@@ -11,6 +11,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -184,6 +185,9 @@ export function OrderForm({ open, onOpenChange, initialData }: OrderFormProps) {
           <DialogTitle>
             {isEditMode ? "Редактировать заказ" : "Создать новый заказ"}
           </DialogTitle>
+          <DialogDescription>
+            Введите информацию о заказе
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -197,7 +201,7 @@ export function OrderForm({ open, onOpenChange, initialData }: OrderFormProps) {
                     <SelectValue placeholder="Выбрать товар" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Свой товар</SelectItem>
+                    <SelectItem value="custom">Свой товар</SelectItem>
                     {availableProducts.map((product) => (
                       <SelectItem key={product.id} value={product.id}>
                         {product.name}

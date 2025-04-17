@@ -5,7 +5,6 @@ import { useApp } from "@/lib/context";
 import { Button } from "@/components/ui/button";
 import { OrderCard } from "@/components/OrderCard";
 import { OrderForm } from "@/components/OrderForm";
-import { Search } from "@/components/Search";
 import { Badge } from "@/components/ui/badge";
 import { FunctionPanel } from "@/components/FunctionPanel";
 import { CurrencyConverter } from "@/components/CurrencyConverter";
@@ -44,7 +43,7 @@ const Orders = () => {
 
   return (
     <Layout title="Заказы" contentRef={contentRef}>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 pb-20">
         <div className="sticky top-0 z-10 bg-background pt-2 pb-4 flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
             <div className="flex items-center">
@@ -63,10 +62,6 @@ const Orders = () => {
                 Создать заказ
               </Button>
             </div>
-          </div>
-
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <Search type="orders" />
           </div>
         </div>
 

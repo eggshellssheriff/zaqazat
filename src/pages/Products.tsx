@@ -44,7 +44,7 @@ const Products = () => {
 
   return (
     <Layout title="Товары" contentRef={contentRef}>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 pb-20">
         <div className="sticky top-0 z-10 bg-background pt-2 pb-4 flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-3 w-full">
             <div className="flex items-center w-full justify-between">
@@ -64,10 +64,6 @@ const Products = () => {
                   {!isMobile && "Добавить товар"}
                 </Button>
               </div>
-            </div>
-            
-            <div className="flex items-center gap-2 w-full justify-between mt-3 md:mt-0 md:justify-end">
-              <Search type="products" className="w-full md:w-auto" />
             </div>
           </div>
         </div>

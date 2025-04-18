@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useApp } from "@/lib/context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,8 +19,6 @@ type SortOption = "default" | "priceLowToHigh" | "priceHighToLow";
 
 export function FunctionPanel() {
   const [isCollapsed, setIsCollapsed] = useState(true);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [isSelectMode, setIsSelectMode] = useState(false);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("default");
@@ -32,15 +30,6 @@ export function FunctionPanel() {
     if (isCollapsed) {
       setIsSearchVisible(false);
     }
-  };
-  
-  const toggleViewMode = () => {
-    const newMode = viewMode === "grid" ? "list" : "grid";
-    setViewMode(newMode);
-  };
-  
-  const toggleSelectMode = () => {
-    setIsSelectMode(!isSelectMode);
   };
   
   const toggleSearch = () => {
@@ -57,7 +46,7 @@ export function FunctionPanel() {
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    setSearchFilters({ query: value });
+    setSearchFilters({ query: value, type: "all" }); // Fixed by adding the required 'type' property
   };
   
   const cycleSortOption = () => {
@@ -78,84 +67,73 @@ export function FunctionPanel() {
         return <ArrowDownWideNarrow className="h-4 w-4 opacity-50" />;
     }
   };
+
+  // Reset search when component unmounts
+  useEffect(() => {
+    return () => {
+      setSearchFilters({ query: "", type: "all" });
+    };
+  }, [setSearchFilters]);
   
   return (
-    <div 
-      className={cn(
-        "function-panel border rounded-lg bg-card/80 backdrop-blur-sm shadow-sm transition-all duration-300 flex items-center gap-2 p-2",
-        isCollapsed ? "w-auto" : "w-full"
-      )}
-    >
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={toggleCollapse}
-        className="shrink-0"
-        title={isCollapsed ? "Развернуть панель" : "Свернуть панель"}
-      >
-        {isCollapsed ? (
-          <ChevronRight className="h-4 w-4" />
-        ) : (
-          <ChevronLeft className="h-4 w-4" />
+    <div className="mb-4">
+      <div 
+        className={cn(
+          "function-panel border rounded-lg bg-card/95 backdrop-blur-sm shadow-sm transition-all duration-300 overflow-hidden",
+          isCollapsed ? "h-10" : "h-auto"
         )}
-      </Button>
-      
-      <div className={cn(
-        "flex items-center gap-2 transition-all duration-300 overflow-hidden",
-        isCollapsed ? "w-0" : "w-full"
-      )}>
-        <Button
-          variant={viewMode === "grid" ? "default" : "outline"}
-          size="icon"
-          onClick={toggleViewMode}
-          title={viewMode === "grid" ? "Список" : "Плитки"}
-        >
-          {viewMode === "grid" ? (
-            <List className="h-4 w-4" />
-          ) : (
-            <Grid2X2 className="h-4 w-4" />
-          )}
-        </Button>
-        
-        <Button
-          variant={isSelectMode ? "default" : "outline"}
-          size="icon"
-          onClick={toggleSelectMode}
-          title={isSelectMode ? "Выйти из режима выбора" : "Выбрать несколько"}
-        >
-          <Check className="h-4 w-4" />
-        </Button>
-        
-        <div className="flex items-center gap-2">
+      >
+        <div className="flex items-center p-2">
           <Button
-            variant={isSearchVisible ? "default" : "outline"}
+            variant="ghost"
             size="icon"
-            onClick={toggleSearch}
-            title={isSearchVisible ? "Скрыть поиск" : "Показать поиск"}
+            onClick={toggleCollapse}
+            className="shrink-0 mr-2"
+            title={isCollapsed ? "Развернуть панель" : "Свернуть панель"}
           >
-            <Search className="h-4 w-4" />
+            {isCollapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
           </Button>
           
-          {isSearchVisible && (
-            <Input
-              id="search-input"
-              type="search"
-              placeholder="Поиск..."
-              className="w-[200px] h-9"
-              value={searchQuery}
-              onChange={(e) => handleSearchChange(e.target.value)}
-            />
-          )}
+          <div className={cn(
+            "flex items-center gap-2 transition-all duration-300",
+            isCollapsed ? "w-0 opacity-0" : "w-full opacity-100"
+          )}>
+            <Button
+              variant={sortOption !== "default" ? "default" : "outline"}
+              size="icon"
+              onClick={cycleSortOption}
+              title="Изменить сортировку"
+            >
+              {getSortIcon()}
+            </Button>
+            
+            <div className="flex items-center gap-2 ml-auto">
+              <Button
+                variant={isSearchVisible ? "default" : "outline"}
+                size="icon"
+                onClick={toggleSearch}
+                title={isSearchVisible ? "Скрыть поиск" : "Показать поиск"}
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+              
+              {isSearchVisible && (
+                <Input
+                  id="search-input"
+                  type="search"
+                  placeholder="Поиск..."
+                  className="w-[200px] h-9 transition-all duration-300"
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                />
+              )}
+            </div>
+          </div>
         </div>
-        
-        <Button
-          variant={sortOption !== "default" ? "default" : "outline"}
-          size="icon"
-          onClick={cycleSortOption}
-          title="Изменить сортировку"
-        >
-          {getSortIcon()}
-        </Button>
       </div>
     </div>
   );

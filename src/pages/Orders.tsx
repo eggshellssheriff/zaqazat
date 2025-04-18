@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { useApp } from "@/lib/context";
@@ -43,30 +42,27 @@ const Orders = () => {
   return (
     <Layout title="Заказы" contentRef={contentRef}>
       <div className="flex flex-col gap-4 pb-20">
-        <div className="sticky top-0 z-10 bg-background pt-2 pb-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold mr-3">Заказы</h1>
-              <Badge variant="outline" className="mr-2">
-                {orders.length}
-              </Badge>
-            </div>
-            <Button 
-              onClick={() => setAddDialogOpen(true)} 
-              disabled={products.length === 0}
-              title={products.length === 0 ? "Добавьте товары, чтобы создать заказ" : ""}
-              className="bg-green-500 hover:bg-green-600"
-              size="sm"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Создать заказ
-            </Button>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center">
+            <h1 className="text-2xl font-bold mr-3">Заказы</h1>
+            <Badge variant="outline" className="mr-2">
+              {orders.length}
+            </Badge>
           </div>
-          
-          <FunctionPanel />
+          <Button 
+            onClick={() => setAddDialogOpen(true)} 
+            disabled={products.length === 0}
+            title={products.length === 0 ? "Добавьте товары, чтобы создать заказ" : ""}
+            className="bg-green-500 hover:bg-green-600"
+            size="sm"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Создать заказ
+          </Button>
         </div>
 
-        {/* Main content */}
+        <FunctionPanel type="orders" />
+
         {orders.length === 0 ? (
           <div className="border rounded-lg p-8 text-center">
             <h3 className="text-lg font-medium mb-2">Нет заказов</h3>
@@ -103,7 +99,6 @@ const Orders = () => {
         )}
       </div>
 
-      {/* Currency Converter Button */}
       {settings.showCurrencyConverter && (
         <Button
           variant="outline"
@@ -116,12 +111,10 @@ const Orders = () => {
         </Button>
       )}
 
-      {/* Currency Converter */}
       {showConverter && settings.showCurrencyConverter && (
         <CurrencyConverter onClose={() => setShowConverter(false)} />
       )}
 
-      {/* Scroll to top button */}
       {showScrollTop && (
         <Button
           variant="outline"

@@ -14,7 +14,12 @@ import {
 type ViewMode = "grid" | "list";
 type SortOption = "default" | "priceLowToHigh" | "priceHighToLow";
 
-export function FunctionPanel({ type }: { type: "products" | "orders" }) {
+interface FunctionPanelProps {
+  type: "products" | "orders";
+  onViewModeChange?: (mode: ViewMode) => void;
+}
+
+export function FunctionPanel({ type, onViewModeChange }: FunctionPanelProps) {
   const { setSortOption: setAppSortOption, setSearchFilters } = useApp();
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -41,7 +46,11 @@ export function FunctionPanel({ type }: { type: "products" | "orders" }) {
   };
 
   const toggleViewMode = () => {
-    setViewMode(viewMode === "grid" ? "list" : "grid");
+    const newViewMode = viewMode === "grid" ? "list" : "grid";
+    setViewMode(newViewMode);
+    if (onViewModeChange) {
+      onViewModeChange(newViewMode);
+    }
   };
 
   const cycleSortOption = () => {

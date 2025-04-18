@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useApp } from "@/lib/context";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Trash2, MinusCircle, PlusCircle } from "lucide-react";
+import { Pencil, Trash2, MinusCircle, PlusCircle, ImageOff } from "lucide-react";
 
 type Product = {
   id: string;

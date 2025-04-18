@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { useApp } from "@/lib/context";
@@ -13,6 +14,7 @@ const Products = () => {
   const { products, filteredProducts } = useApp();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const contentRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
@@ -59,7 +61,7 @@ const Products = () => {
           </Button>
         </div>
 
-        <FunctionPanel type="products" />
+        <FunctionPanel type="products" onViewModeChange={setViewMode} />
 
         {products.length === 0 ? (
           <div className="border rounded-lg p-4 sm:p-8 text-center">
@@ -80,9 +82,16 @@ const Products = () => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className={viewMode === "grid" 
+            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            : "flex flex-col gap-2"
+          }>
             {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} viewMode="grid" />
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                viewMode={viewMode}
+              />
             ))}
           </div>
         )}

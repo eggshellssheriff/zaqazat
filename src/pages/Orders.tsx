@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { useApp } from "@/lib/context";
@@ -17,7 +16,6 @@ const Orders = () => {
   const [showConverter, setShowConverter] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Обработчик прокрутки для кнопки "вверх"
   const handleScroll = () => {
     if (contentRef.current) {
       setShowScrollTop(contentRef.current.scrollTop > 300);
@@ -44,7 +42,7 @@ const Orders = () => {
   return (
     <Layout title="Заказы" contentRef={contentRef}>
       <div className="flex flex-col gap-6 pb-20">
-        <div className="sticky top-0 z-10 bg-background pt-2 pb-4 flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
+        <div className="sticky top-0 z-10 bg-background pt-2 pb-4 space-y-4">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
             <div className="flex items-center">
               <h1 className="text-2xl font-bold mr-3">Заказы</h1>
@@ -63,8 +61,10 @@ const Orders = () => {
               </Button>
             </div>
           </div>
+          <FunctionPanel />
         </div>
 
+        {/* Main content */}
         {orders.length === 0 ? (
           <div className="border rounded-lg p-8 text-center">
             <h3 className="text-lg font-medium mb-2">Нет заказов</h3>
@@ -101,10 +101,7 @@ const Orders = () => {
         )}
       </div>
 
-      {/* Function Panel */}
-      <FunctionPanel />
-
-      {/* Currency Converter Button (only shown if enabled in settings) */}
+      {/* Currency Converter Button */}
       {settings.showCurrencyConverter && (
         <Button
           variant="outline"

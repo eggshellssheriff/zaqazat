@@ -1,11 +1,9 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { useApp } from "@/lib/context";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductForm } from "@/components/ProductForm";
-import { Search } from "@/components/Search";
 import { Badge } from "@/components/ui/badge";
 import { FunctionPanel } from "@/components/FunctionPanel";
 import { Plus, ArrowUp } from "lucide-react";
@@ -18,7 +16,6 @@ const Products = () => {
   const contentRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
-  // Обработчик прокрутки для кнопки "вверх"
   const handleScroll = () => {
     if (contentRef.current) {
       setShowScrollTop(contentRef.current.scrollTop > 300);
@@ -45,8 +42,8 @@ const Products = () => {
   return (
     <Layout title="Товары" contentRef={contentRef}>
       <div className="flex flex-col gap-6 pb-20">
-        <div className="sticky top-0 z-10 bg-background pt-2 pb-4 flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-3 w-full">
+        <div className="sticky top-0 z-10 bg-background pt-2 pb-4 space-y-4">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
             <div className="flex items-center w-full justify-between">
               <div className="flex items-center">
                 <h1 className="text-2xl font-bold mr-3">Товары</h1>
@@ -54,18 +51,17 @@ const Products = () => {
                   {products.length}
                 </Badge>
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={() => setAddDialogOpen(true)}
-                  className="bg-green-500 hover:bg-green-600"
-                  size="sm"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  {!isMobile && "Добавить товар"}
-                </Button>
-              </div>
+              <Button
+                onClick={() => setAddDialogOpen(true)}
+                className="bg-green-500 hover:bg-green-600"
+                size="sm"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                {!isMobile && "Добавить товар"}
+              </Button>
             </div>
           </div>
+          <FunctionPanel />
         </div>
 
         {products.length === 0 ? (
@@ -95,10 +91,6 @@ const Products = () => {
         )}
       </div>
 
-      {/* Function Panel */}
-      <FunctionPanel />
-
-      {/* Scroll to top button */}
       {showScrollTop && (
         <Button
           variant="outline"

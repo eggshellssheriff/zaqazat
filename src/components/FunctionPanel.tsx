@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useApp } from "@/lib/context";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   ChevronRight,
   ChevronLeft,
@@ -9,64 +10,58 @@ import {
   List,
   Check,
   Search,
-  ArrowDownAZ,
-  ArrowDownZA,
   ArrowDownWideNarrow,
   ArrowDownNarrowWide,
 } from "lucide-react";
-import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
-type SortOption = "default" | "alphabetical" | "priceLowToHigh" | "priceHighToLow";
+type SortOption = "default" | "priceLowToHigh" | "priceHighToLow";
 
 export function FunctionPanel() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isSelectMode, setIsSelectMode] = useState(false);
-  const [isSearchMode, setIsSearchMode] = useState(false);
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("default");
   
   const { setSortOption: setAppSortOption, setSearchFilters } = useApp();
-  const location = useLocation();
-  
-  // Determine the current page
-  const isProductsPage = location.pathname.includes('/products');
-  const isOrdersPage = location.pathname.includes('/orders');
-  
-  // If not on products or orders page, don't show the panel
-  if (!isProductsPage && !isOrdersPage) {
-    return null;
-  }
   
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
+    if (isCollapsed) {
+      setIsSearchVisible(false);
+    }
   };
   
   const toggleViewMode = () => {
     const newMode = viewMode === "grid" ? "list" : "grid";
     setViewMode(newMode);
-    // Here you would update app context with the new view mode
   };
   
   const toggleSelectMode = () => {
     setIsSelectMode(!isSelectMode);
-    // Here you would update app context with the selection mode
   };
   
-  const toggleSearchMode = () => {
-    setIsSearchMode(!isSearchMode);
-    // Clear search when turning off search mode
-    if (isSearchMode) {
-      setSearchFilters(prev => ({
-        ...prev,
-        query: ""
-      }));
+  const toggleSearch = () => {
+    setIsSearchVisible(!isSearchVisible);
+    if (!isSearchVisible) {
+      setTimeout(() => {
+        const searchInput = document.getElementById("search-input");
+        if (searchInput) {
+          searchInput.focus();
+        }
+      }, 100);
     }
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setSearchFilters({ query: value });
   };
   
   const cycleSortOption = () => {
-    // Cycle through sort options
-    const options: SortOption[] = ["alphabetical", "priceHighToLow", "priceLowToHigh", "default"];
+    const options: SortOption[] = ["priceHighToLow", "priceLowToHigh", "default"];
     const currentIndex = options.indexOf(sortOption);
     const nextOption = options[(currentIndex + 1) % options.length];
     setSortOption(nextOption);
@@ -75,28 +70,27 @@ export function FunctionPanel() {
   
   const getSortIcon = () => {
     switch (sortOption) {
-      case "alphabetical":
-        return <ArrowDownAZ className="h-4 w-4" />;
       case "priceHighToLow":
         return <ArrowDownWideNarrow className="h-4 w-4" />;
       case "priceLowToHigh":
         return <ArrowDownNarrowWide className="h-4 w-4" />;
       default:
-        return <ArrowDownAZ className="h-4 w-4 opacity-50" />;
+        return <ArrowDownWideNarrow className="h-4 w-4 opacity-50" />;
     }
   };
   
   return (
     <div 
       className={cn(
-        "function-panel fixed z-40 right-4 top-1/2 -translate-y-1/2 bg-background border rounded-lg shadow-md transition-all duration-300 flex flex-col gap-2 p-2",
-        isCollapsed ? "w-12" : "w-52"
+        "function-panel border rounded-lg bg-card/80 backdrop-blur-sm shadow-sm transition-all duration-300 flex items-center gap-2 p-2",
+        isCollapsed ? "w-auto" : "w-full"
       )}
     >
       <Button
-        variant="outline"
+        variant="ghost"
         size="icon"
         onClick={toggleCollapse}
+        className="shrink-0"
         title={isCollapsed ? "Развернуть панель" : "Свернуть панель"}
       >
         {isCollapsed ? (
@@ -106,102 +100,63 @@ export function FunctionPanel() {
         )}
       </Button>
       
-      {!isCollapsed && (
-        <div className="space-y-2 w-full">
+      <div className={cn(
+        "flex items-center gap-2 transition-all duration-300 overflow-hidden",
+        isCollapsed ? "w-0" : "w-full"
+      )}>
+        <Button
+          variant={viewMode === "grid" ? "default" : "outline"}
+          size="icon"
+          onClick={toggleViewMode}
+          title={viewMode === "grid" ? "Список" : "Плитки"}
+        >
+          {viewMode === "grid" ? (
+            <List className="h-4 w-4" />
+          ) : (
+            <Grid2X2 className="h-4 w-4" />
+          )}
+        </Button>
+        
+        <Button
+          variant={isSelectMode ? "default" : "outline"}
+          size="icon"
+          onClick={toggleSelectMode}
+          title={isSelectMode ? "Выйти из режима выбора" : "Выбрать несколько"}
+        >
+          <Check className="h-4 w-4" />
+        </Button>
+        
+        <div className="flex items-center gap-2">
           <Button
-            variant={viewMode === "grid" ? "default" : "outline"}
-            className="w-full justify-start"
-            onClick={toggleViewMode}
-            title={viewMode === "grid" ? "Переключить в список" : "Переключить в плитки"}
-          >
-            {viewMode === "grid" ? (
-              <>
-                <List className="h-4 w-4 mr-2" />
-                <span>Список</span>
-              </>
-            ) : (
-              <>
-                <Grid2X2 className="h-4 w-4 mr-2" />
-                <span>Плитки</span>
-              </>
-            )}
-          </Button>
-          
-          <Button
-            variant={isSelectMode ? "default" : "outline"}
-            className="w-full justify-start"
-            onClick={toggleSelectMode}
-            title={isSelectMode ? "Выйти из режима выбора" : "Выбрать несколько"}
-          >
-            <Check className="h-4 w-4 mr-2" />
-            <span>Выбрать</span>
-          </Button>
-          
-          <Button
-            variant={isSearchMode ? "default" : "outline"}
-            className="w-full justify-start"
-            onClick={toggleSearchMode}
-            title={isSearchMode ? "Скрыть поиск" : "Показать поиск"}
-          >
-            <Search className="h-4 w-4 mr-2" />
-            <span>Поиск</span>
-          </Button>
-          
-          <Button
-            variant={sortOption !== "default" ? "default" : "outline"}
-            className="w-full justify-start"
-            onClick={cycleSortOption}
-            title="Изменить сортировку"
-          >
-            {getSortIcon()}
-            <span className="ml-2">Сортировка</span>
-          </Button>
-        </div>
-      )}
-      
-      {isCollapsed && (
-        <div className="space-y-2">
-          <Button
-            variant={viewMode === "grid" ? "default" : "outline"}
+            variant={isSearchVisible ? "default" : "outline"}
             size="icon"
-            onClick={toggleViewMode}
-            title={viewMode === "grid" ? "Переключить в список" : "Переключить в плитки"}
-          >
-            {viewMode === "grid" ? (
-              <List className="h-4 w-4" />
-            ) : (
-              <Grid2X2 className="h-4 w-4" />
-            )}
-          </Button>
-          
-          <Button
-            variant={isSelectMode ? "default" : "outline"}
-            size="icon"
-            onClick={toggleSelectMode}
-            title={isSelectMode ? "Выйти из режима выбора" : "Выбрать несколько"}
-          >
-            <Check className="h-4 w-4" />
-          </Button>
-          
-          <Button
-            variant={isSearchMode ? "default" : "outline"}
-            size="icon"
-            onClick={toggleSearchMode}
-            title={isSearchMode ? "Скрыть поиск" : "Показать поиск"}
+            onClick={toggleSearch}
+            title={isSearchVisible ? "Скрыть поиск" : "Показать поиск"}
           >
             <Search className="h-4 w-4" />
           </Button>
           
-          <Button
-            variant={sortOption !== "default" ? "default" : "outline"}
-            size="icon"
-            onClick={cycleSortOption}
-            title="Изменить сортировку"
-          >
-            {getSortIcon()}
-          </Button>
+          {isSearchVisible && (
+            <Input
+              id="search-input"
+              type="search"
+              placeholder="Поиск..."
+              className="w-[200px] h-9"
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+            />
+          )}
         </div>
-      )}
+        
+        <Button
+          variant={sortOption !== "default" ? "default" : "outline"}
+          size="icon"
+          onClick={cycleSortOption}
+          title="Изменить сортировку"
+        >
+          {getSortIcon()}
+        </Button>
+      </div>
     </div>
   );
 }

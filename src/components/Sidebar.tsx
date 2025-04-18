@@ -1,4 +1,3 @@
-
 import { useApp } from "@/lib/context";
 import { Button } from "@/components/ui/button";
 import { 
@@ -26,7 +25,7 @@ export function Sidebar() {
         onClick={closeSidebar}
       ></div>
       
-      <div className={`fixed top-0 left-0 z-50 h-full w-64 bg-card transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:z-0`}>
+      <div className={`fixed top-0 left-0 z-50 h-full w-64 bg-card/90 backdrop-blur-sm transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:z-0`}>
         <div className="flex flex-col h-full border-r">
           <div className="p-4 flex items-center justify-between border-b">
             <h2 className="text-lg font-semibold">zaqaz</h2>

@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { useApp } from "@/lib/context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,10 +15,11 @@ type ViewMode = "grid" | "list";
 type SortOption = "default" | "priceLowToHigh" | "priceHighToLow";
 
 export function FunctionPanel({ type }: { type: "products" | "orders" }) {
-  const { setSortOption, setSearchFilters, viewMode, setViewMode } = useApp();
+  const { setSortOption: setAppSortOption, setSearchFilters } = useApp();
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("default");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);

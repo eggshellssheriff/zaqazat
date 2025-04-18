@@ -1,89 +1,139 @@
 
+import { Link, useLocation } from "react-router-dom";
 import { useApp } from "@/lib/context";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { 
-  ShoppingCart,
-  Package,
-  Settings,
-  Sun,
+  Package, 
+  ShoppingBag, 
+  Settings, 
+  Sun, 
   Moon,
-  Menu,
-  X
+  Database
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 
-export function Sidebar() {
-  const { theme, toggleTheme, sidebarOpen, setSidebarOpen } = useApp();
-  
-  const closeSidebar = () => {
-    setSidebarOpen(false);
-  };
+interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+export function Sidebar({ className }: SidebarProps) {
+  const { theme, toggleTheme, setSidebarOpen, sidebarOpen, products, orders, database } = useApp();
+  const location = useLocation();
 
   return (
     <>
-      <div 
-        className={`fixed inset-0 bg-background/80 backdrop-blur-sm z-40 ${sidebarOpen ? 'block' : 'hidden'} lg:hidden`} 
-        onClick={closeSidebar}
-      ></div>
-      
-      <div className={`fixed top-0 left-0 z-50 h-full w-64 bg-card/80 backdrop-blur-md transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:z-0`}>
-        <div className="flex flex-col h-full border-r border-border/50">
-          <div className="p-4 flex items-center justify-between border-b border-border/50">
-            <h2 className="text-lg font-semibold">zaqaz</h2>
-            <Button variant="ghost" size="icon" className="lg:hidden" onClick={closeSidebar}>
-              <X className="h-5 w-5" />
-            </Button>
+      {/* Mobile Sidebar (Sheet) */}
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="left" className="p-0">
+          <div className="space-y-4 py-4">
+            <div className="px-4 py-2">
+              <h2 className="mb-2 text-lg font-semibold">Навигация</h2>
+              <div className="space-y-1">
+                <MobileNavItem
+                  to="/products"
+                  active={location.pathname === "/products"}
+                  icon={<Package className="w-4 h-4 mr-2" />}
+                  count={products.length}
+                >
+                  Товары
+                </MobileNavItem>
+                <MobileNavItem
+                  to="/orders"
+                  active={location.pathname === "/orders"}
+                  icon={<ShoppingBag className="w-4 h-4 mr-2" />}
+                  count={orders.length}
+                >
+                  Заказы
+                </MobileNavItem>
+                <MobileNavItem
+                  to="/database"
+                  active={location.pathname === "/database"}
+                  icon={<Database className="w-4 h-4 mr-2" />}
+                  count={database.length}
+                >
+                  База данных
+                </MobileNavItem>
+                <MobileNavItem
+                  to="/settings"
+                  active={location.pathname === "/settings"}
+                  icon={<Settings className="w-4 h-4 mr-2" />}
+                >
+                  Настройки
+                </MobileNavItem>
+              </div>
+            </div>
+            <div className="px-4 py-2">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start" 
+                onClick={toggleTheme}
+                size="sm"
+              >
+                {theme === 'light' 
+                  ? <Moon className="w-4 h-4 mr-2" /> 
+                  : <Sun className="w-4 h-4 mr-2" />
+                }
+                {theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}
+              </Button>
+            </div>
           </div>
-          
-          <nav className="flex-1 p-4 space-y-1">
-            <Link to="/orders" onClick={closeSidebar}>
-              <Button
-                variant="ghost"
-                className="w-full justify-start"
+        </SheetContent>
+      </Sheet>
+
+      {/* Desktop Sidebar */}
+      <div className={cn("pb-12 hidden md:block", className)}>
+        <div className="space-y-4 py-4">
+          <div className="px-4 py-2">
+            <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">
+              Навигация
+            </h2>
+            <div className="space-y-1">
+              <DesktopNavItem
+                to="/products"
+                active={location.pathname === "/products"}
+                icon={<Package className="w-4 h-4 mr-2" />}
+                count={products.length}
               >
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Заказы
-              </Button>
-            </Link>
-            
-            <Link to="/products" onClick={closeSidebar}>
-              <Button
-                variant="ghost"
-                className="w-full justify-start"
-              >
-                <Package className="mr-2 h-4 w-4" />
                 Товары
-              </Button>
-            </Link>
-            
-            <Link to="/settings" onClick={closeSidebar}>
-              <Button
-                variant="ghost"
-                className="w-full justify-start"
+              </DesktopNavItem>
+              <DesktopNavItem
+                to="/orders"
+                active={location.pathname === "/orders"}
+                icon={<ShoppingBag className="w-4 h-4 mr-2" />}
+                count={orders.length}
               >
-                <Settings className="mr-2 h-4 w-4" />
+                Заказы
+              </DesktopNavItem>
+              <DesktopNavItem
+                to="/database"
+                active={location.pathname === "/database"}
+                icon={<Database className="w-4 h-4 mr-2" />}
+                count={database.length}
+              >
+                База данных
+              </DesktopNavItem>
+              <DesktopNavItem
+                to="/settings"
+                active={location.pathname === "/settings"}
+                icon={<Settings className="w-4 h-4 mr-2" />}
+              >
                 Настройки
-              </Button>
-            </Link>
-          </nav>
-          
-          <div className="p-4 border-t border-border/50">
-            <Button
-              variant="outline"
-              className="w-full justify-start"
+              </DesktopNavItem>
+            </div>
+          </div>
+          <div className="px-4 py-2">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start" 
               onClick={toggleTheme}
+              size="sm"
             >
-              {theme === "light" ? (
-                <>
-                  <Moon className="mr-2 h-4 w-4" />
-                  Темная тема
-                </>
-              ) : (
-                <>
-                  <Sun className="mr-2 h-4 w-4" />
-                  Светлая тема
-                </>
-              )}
+              {theme === 'light' 
+                ? <Moon className="w-4 h-4 mr-2" /> 
+                : <Sun className="w-4 h-4 mr-2" />
+              }
+              {theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}
             </Button>
           </div>
         </div>
@@ -92,17 +142,50 @@ export function Sidebar() {
   );
 }
 
-export function SidebarToggle() {
-  const { setSidebarOpen } = useApp();
-  
+interface NavItemProps {
+  to: string;
+  active: boolean;
+  children: React.ReactNode;
+  icon?: React.ReactNode;
+  count?: number;
+}
+
+function MobileNavItem({ to, active, children, icon, count }: NavItemProps) {
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      className="lg:hidden"
-      onClick={() => setSidebarOpen(true)}
-    >
-      <Menu className="h-5 w-5" />
-    </Button>
+    <Link to={to} className="block">
+      <Button
+        variant={active ? "default" : "ghost"}
+        className="w-full justify-start"
+        size="sm"
+      >
+        {icon}
+        <span>{children}</span>
+        {count !== undefined && (
+          <Badge variant="outline" className="ml-auto">
+            {count}
+          </Badge>
+        )}
+      </Button>
+    </Link>
+  );
+}
+
+function DesktopNavItem({ to, active, children, icon, count }: NavItemProps) {
+  return (
+    <Link to={to}>
+      <Button
+        variant={active ? "default" : "ghost"}
+        className="w-full justify-start"
+        size="sm"
+      >
+        {icon}
+        <span>{children}</span>
+        {count !== undefined && (
+          <Badge variant="outline" className="ml-auto">
+            {count}
+          </Badge>
+        )}
+      </Button>
+    </Link>
   );
 }

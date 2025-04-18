@@ -14,7 +14,7 @@ const Products = () => {
   const { products, filteredProducts } = useApp();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list"); // Default to list view
   const contentRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
@@ -41,6 +41,16 @@ const Products = () => {
     }
   }, []);
 
+  // Reset all filters and settings when leaving the page
+  useEffect(() => {
+    return () => {
+      // This will run when component unmounts
+      const { setSearchFilters, setSortOption } = useApp();
+      setSearchFilters({ type: "products", query: "" });
+      setSortOption("dateNewest");
+    };
+  }, []);
+
   return (
     <Layout title="Товары" contentRef={contentRef}>
       <div className="flex flex-col gap-4 pb-20">
@@ -55,9 +65,9 @@ const Products = () => {
             onClick={() => setAddDialogOpen(true)}
             className="bg-green-500 hover:bg-green-600"
             size="sm"
+            title="Добавить товар"
           >
-            <Plus className="mr-2 h-4 w-4" />
-            {!isMobile && "Добавить товар"}
+            <Plus className="h-4 w-4" />
           </Button>
         </div>
 
@@ -108,7 +118,7 @@ const Products = () => {
         </Button>
       )}
 
-      <ProductForm open={addDialogOpen} onOpenChange={setAddDialogOpen} />
+      <ProductForm open={addDialogOpen} onOpenChange={setAddDialogOpen} disableImageUpload={true} />
     </Layout>
   );
 };

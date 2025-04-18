@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { useApp } from "@/lib/context";
@@ -8,13 +9,16 @@ import { Badge } from "@/components/ui/badge";
 import { FunctionPanel } from "@/components/FunctionPanel";
 import { CurrencyConverter } from "@/components/CurrencyConverter";
 import { Plus, ArrowUp, DollarSign } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Orders = () => {
   const { orders, products, filteredOrders, settings } = useApp();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showConverter, setShowConverter] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list"); // Default to list view
   const contentRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   const handleScroll = () => {
     if (contentRef.current) {
@@ -39,6 +43,16 @@ const Orders = () => {
     }
   }, []);
 
+  // Reset all filters and settings when leaving the page
+  useEffect(() => {
+    return () => {
+      // This will run when component unmounts
+      const { setSearchFilters, setSortOption } = useApp();
+      setSearchFilters({ type: "orders", query: "" });
+      setSortOption("dateNewest");
+    };
+  }, []);
+
   return (
     <Layout title="Заказы" contentRef={contentRef}>
       <div className="flex flex-col gap-4 pb-20">
@@ -52,16 +66,15 @@ const Orders = () => {
           <Button 
             onClick={() => setAddDialogOpen(true)} 
             disabled={products.length === 0}
-            title={products.length === 0 ? "Добавьте товары, чтобы создать заказ" : ""}
+            title={products.length === 0 ? "Добавьте товары, чтобы создать заказ" : "Создать заказ"}
             className="bg-green-500 hover:bg-green-600"
             size="sm"
           >
-            <Plus className="mr-2 h-4 w-4" />
-            Создать заказ
+            <Plus className="h-4 w-4" />
           </Button>
         </div>
 
-        <FunctionPanel type="orders" />
+        <FunctionPanel type="orders" onViewModeChange={setViewMode} />
 
         {orders.length === 0 ? (
           <div className="border rounded-lg p-8 text-center">
@@ -91,9 +104,12 @@ const Orders = () => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className={viewMode === "grid" 
+            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            : "flex flex-col gap-2"
+          }>
             {filteredOrders.map((order) => (
-              <OrderCard key={order.id} order={order} />
+              <OrderCard key={order.id} order={order} viewMode={viewMode} />
             ))}
           </div>
         )}
@@ -126,7 +142,7 @@ const Orders = () => {
         </Button>
       )}
 
-      <OrderForm open={addDialogOpen} onOpenChange={setAddDialogOpen} />
+      <OrderForm open={addDialogOpen} onOpenChange={setAddDialogOpen} maxImageSize={1000} />
     </Layout>
   );
 };

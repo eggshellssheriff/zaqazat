@@ -7,12 +7,12 @@ import {
   Search,
   Grid2X2,
   List,
-  ArrowDownWideNarrow,
-  ArrowDownNarrowWide,
+  Clock,
+  RotateCcw,
 } from "lucide-react";
 
 type ViewMode = "grid" | "list";
-type SortOption = "default" | "priceLowToHigh" | "priceHighToLow";
+type SortOption = "dateNewest" | "dateOldest";
 
 interface FunctionPanelProps {
   type: "products" | "orders";
@@ -23,8 +23,8 @@ export function FunctionPanel({ type, onViewModeChange }: FunctionPanelProps) {
   const { setSortOption: setAppSortOption, setSearchFilters } = useApp();
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortOption, setSortOption] = useState<SortOption>("default");
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [sortOption, setSortOption] = useState<SortOption>("dateNewest");
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
@@ -53,12 +53,10 @@ export function FunctionPanel({ type, onViewModeChange }: FunctionPanelProps) {
     }
   };
 
-  const cycleSortOption = () => {
-    const options: SortOption[] = ["priceHighToLow", "priceLowToHigh", "default"];
-    const currentIndex = options.indexOf(sortOption);
-    const nextOption = options[(currentIndex + 1) % options.length];
-    setSortOption(nextOption);
-    setAppSortOption(nextOption);
+  const toggleSortOption = () => {
+    const newOption = sortOption === "dateNewest" ? "dateOldest" : "dateNewest";
+    setSortOption(newOption);
+    setAppSortOption(newOption);
   };
 
   return (
@@ -89,6 +87,7 @@ export function FunctionPanel({ type, onViewModeChange }: FunctionPanelProps) {
             size="icon"
             onClick={toggleSearch}
             className="shrink-0"
+            title="Поиск"
           >
             <Search className="h-4 w-4" />
           </Button>
@@ -111,18 +110,16 @@ export function FunctionPanel({ type, onViewModeChange }: FunctionPanelProps) {
         </Button>
 
         <Button
-          variant={sortOption !== "default" ? "default" : "ghost"}
+          variant={sortOption !== "dateNewest" ? "default" : "ghost"}
           size="icon"
-          onClick={cycleSortOption}
+          onClick={toggleSortOption}
           className="shrink-0"
-          title="Сортировка по цене"
+          title={sortOption === "dateNewest" ? "От новых к старым" : "От старых к новым"}
         >
-          {sortOption === "priceHighToLow" ? (
-            <ArrowDownWideNarrow className="h-4 w-4" />
-          ) : sortOption === "priceLowToHigh" ? (
-            <ArrowDownNarrowWide className="h-4 w-4" />
+          {sortOption === "dateNewest" ? (
+            <Clock className="h-4 w-4" />
           ) : (
-            <ArrowDownWideNarrow className="h-4 w-4 opacity-50" />
+            <RotateCcw className="h-4 w-4" />
           )}
         </Button>
       </div>

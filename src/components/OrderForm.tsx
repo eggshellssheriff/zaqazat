@@ -27,6 +27,7 @@ import { validatePhoneNumber } from "@/lib/utils";
 type OrderFormProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  maxImageSize?: number; // KB
   initialData?: {
     id: string;
     customerName: string;
@@ -45,7 +46,7 @@ type OrderFormProps = {
   };
 };
 
-export function OrderForm({ open, onOpenChange, initialData }: OrderFormProps) {
+export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000 }: OrderFormProps) {
   const { addOrder, updateOrder, products: availableProducts } = useApp();
   
   // Base order details
@@ -218,7 +219,7 @@ export function OrderForm({ open, onOpenChange, initialData }: OrderFormProps) {
               onChange={(e) => setProductName(e.target.value)}
               placeholder="Название товара"
               className={errors.productName ? "border-red-500" : ""}
-              disabled={!!selectedProduct}
+              disabled={!!selectedProduct && selectedProduct !== "custom"}
             />
             {errors.productName && (
               <p className="text-xs text-red-500 flex items-center gap-1">
@@ -240,7 +241,7 @@ export function OrderForm({ open, onOpenChange, initialData }: OrderFormProps) {
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="0"
                 className={errors.price ? "border-red-500" : ""}
-                disabled={!!selectedProduct}
+                disabled={!!selectedProduct && selectedProduct !== "custom"}
               />
               {errors.price && (
                 <p className="text-xs text-red-500 flex items-center gap-1">
@@ -360,8 +361,9 @@ export function OrderForm({ open, onOpenChange, initialData }: OrderFormProps) {
             <ImageUpload 
               value={image} 
               onChange={setImage} 
-              maxSize={500} // KB
+              maxSize={maxImageSize} // KB
               className="h-[120px]"
+              enableCrop={true}
             />
           </div>
           

@@ -8,6 +8,7 @@ import { AppProvider } from "@/lib/context";
 import Products from "./pages/Products";
 import Orders from "./pages/Orders";
 import Settings from "./pages/Settings";
+import Database from "./pages/Database";
 import NotFound from "./pages/NotFound";
 
 // Create a client
@@ -22,6 +23,7 @@ const App = () => (
             <Route path="/" element={<Navigate to="/orders" replace />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/products" element={<Products />} />
+            <Route path="/database" element={<Database />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

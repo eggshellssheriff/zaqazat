@@ -1,10 +1,8 @@
-
 import React, { useState } from "react";
 import { useApp } from "@/lib/context";
 import {
   Card,
   CardContent,
-  CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +16,17 @@ import {
 } from "@/components/ui/dialog";
 import { OrderForm } from "./OrderForm";
 import { OrderModal } from "./OrderModal";
-import { AlertTriangle, Calendar, Edit, Trash, ChevronDown, ImageOff } from "lucide-react";
+import { 
+  AlertTriangle, 
+  Calendar, 
+  Edit, 
+  Trash, 
+  ChevronDown, 
+  ImageOff,
+  User,
+  Phone,
+  Clock
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,13 +53,15 @@ type Order = {
 
 interface OrderCardProps {
   order: Order;
+  viewMode: "grid" | "list";
 }
 
-export function OrderCard({ order }: OrderCardProps) {
+export function OrderCard({ order, viewMode }: OrderCardProps) {
   const { deleteOrder, updateOrderStatus } = useApp();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showFullImage, setShowFullImage] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(!!order.image);
 
   // Format the date to DD.MM.YY format
@@ -83,6 +93,157 @@ export function OrderCard({ order }: OrderCardProps) {
 
   // Limited status options
   const statuses = ["в пути", "на складе"];
+  
+  // Handle image click to show full screen
+  const handleImageClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowFullImage(!showFullImage);
+  };
+
+  if (viewMode === "list") {
+    return (
+      <>
+        <Card className="overflow-hidden hover:bg-accent/50 transition-colors" onClick={() => setShowDetailsModal(true)}>
+          <div className="flex items-center p-3">
+            <div className="flex-grow">
+              <div className="flex items-center gap-2">
+                <span className="font-medium">{order.products[0]?.name || "Нет товаров"}</span>
+                <Badge variant={getBadgeVariant(order.status)} className="ml-2">
+                  {order.status}
+                </Badge>
+              </div>
+              
+              <div className="flex items-center text-sm text-muted-foreground mt-1 gap-3">
+                <div className="flex items-center">
+                  <User className="h-3 w-3 mr-1" />
+                  <span className="truncate max-w-[120px]">{order.customerName}</span>
+                </div>
+                
+                <div className="flex items-center">
+                  <Clock className="h-3 w-3 mr-1" />
+                  <span>{formattedDate}</span>
+                </div>
+                
+                {order.phoneNumber && (
+                  <div className="flex items-center">
+                    <Phone className="h-3 w-3 mr-1" />
+                    <span>{order.phoneNumber}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-1 ml-auto">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                title="Удалить"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDeleteDialog(true);
+                }}
+              >
+                <Trash className="h-4 w-4" />
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                title="Редактировать"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowEditDialog(true);
+                }}
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="h-7"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <span className="text-sm font-medium">{order.totalAmount.toLocaleString()} ₸</span>
+                    <ChevronDown className="h-3 w-3 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {statuses.map((status) => (
+                    <DropdownMenuItem
+                      key={status}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStatusChange(status);
+                      }}
+                      className={status === order.status ? "bg-accent font-medium" : ""}
+                    >
+                      {status}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </Card>
+
+        {/* Rest of the dialogs */}
+        <OrderForm
+          initialData={order}
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          maxImageSize={1000}
+        />
+
+        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+                Удалить заказ
+              </DialogTitle>
+              <DialogDescription>
+                Вы уверены, что хотите удалить этот заказ? Это действие нельзя отменить.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-2 sm:justify-start">
+              <Button variant="ghost" onClick={() => setShowDeleteDialog(false)}>
+                Отмена
+              </Button>
+              <Button variant="destructive" onClick={handleDelete}>
+                Удалить
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {showDetailsModal && (
+          <OrderModal 
+            order={order} 
+            onClose={() => setShowDetailsModal(false)} 
+          />
+        )}
+        
+        {showFullImage && order.image && (
+          <div 
+            className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center cursor-pointer"
+            onClick={() => setShowFullImage(false)}
+          >
+            <img 
+              src={order.image} 
+              alt={order.customerName} 
+              className="max-w-full max-h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        )}
+      </>
+    );
+  }
 
   return (
     <>
@@ -133,7 +294,10 @@ export function OrderCard({ order }: OrderCardProps) {
           
           {/* Right content with image */}
           <div className="w-[100px] flex flex-col">
-            <div className="h-[100px] bg-muted/20 rounded overflow-hidden mb-2">
+            <div 
+              className="h-[100px] bg-muted/20 rounded overflow-hidden mb-2 cursor-pointer"
+              onClick={(e) => order.image && handleImageClick(e)}
+            >
               {order.image ? (
                 <img
                   src={order.image}
@@ -190,6 +354,7 @@ export function OrderCard({ order }: OrderCardProps) {
         initialData={order}
         open={showEditDialog}
         onOpenChange={setShowEditDialog}
+        maxImageSize={1000}
       />
 
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -219,6 +384,20 @@ export function OrderCard({ order }: OrderCardProps) {
           order={order} 
           onClose={() => setShowDetailsModal(false)} 
         />
+      )}
+      
+      {showFullImage && order.image && (
+        <div 
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center cursor-pointer"
+          onClick={() => setShowFullImage(false)}
+        >
+          <img 
+            src={order.image} 
+            alt={order.customerName} 
+            className="max-w-full max-h-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
       )}
     </>
   );

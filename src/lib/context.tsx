@@ -1,6 +1,6 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 type Product = {
   id: string;
@@ -9,6 +9,7 @@ type Product = {
   quantity: number;
   description: string;
   image: string | null;
+  createdAt?: string; // Add creation date
 };
 
 type Order = {
@@ -26,12 +27,13 @@ type Order = {
     price: number;
   }>;
   totalAmount: number;
+  createdAt?: string; // Add creation date
 };
 
 type Theme = "light" | "dark";
 
 type SearchFilters = {
-  type: "products" | "orders";
+  type: "products" | "orders" | "database";
   query: string;
   minPrice?: number;
   maxPrice?: number;
@@ -39,10 +41,22 @@ type SearchFilters = {
   maxQuantity?: number;
 };
 
-type SortOption = "default" | "alphabetical" | "priceLowToHigh" | "priceHighToLow";
+type SortOption = "default" | "alphabetical" | "priceLowToHigh" | "priceHighToLow" | "dateNewest" | "dateOldest";
 
 type Settings = {
   showCurrencyConverter: boolean;
+};
+
+// Database entry for phone numbers and associated orders
+type PhoneEntry = {
+  phoneNumber: string;
+  orders: Array<{
+    id: string;
+    date: string;
+    productName: string;
+    totalAmount: number;
+    isDeleted?: boolean; // Flag to mark if the order has been deleted from the main list
+  }>;
 };
 
 interface AppContextType {
@@ -55,17 +69,20 @@ interface AppContextType {
   searchFilters: SearchFilters;
   sortOption: SortOption;
   settings: Settings;
-  addProduct: (product: Omit<Product, "id">) => void;
+  database: PhoneEntry[];
+  filteredDatabase: PhoneEntry[];
+  addProduct: (product: Omit<Product, "id" | "createdAt">) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (id: string) => void;
   adjustQuantity: (id: string, changeAmount: number) => void;
-  addOrder: (order: Omit<Order, "id">) => void;
+  addOrder: (order: Omit<Order, "id" | "createdAt">) => void;
   updateOrder: (order: Order) => void;
   updateOrderStatus: (id: string, status: string) => void;
   deleteOrder: (id: string) => void;
+  deletePhoneEntry: (phoneNumber: string) => void;
   toggleTheme: () => void;
   setSidebarOpen: (open: boolean) => void;
-  setSearchFilters: (filters: SearchFilters) => void;
+  setSearchFilters: (filters: Partial<SearchFilters>) => void;
   setSortOption: (option: SortOption) => void;
   updateSettings: (newSettings: Partial<Settings>) => void;
 }
@@ -75,17 +92,28 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>(() => {
     const savedProducts = localStorage.getItem("products");
-    return savedProducts ? JSON.parse(savedProducts) : [];
+    // Add createdAt dates to existing products if they don't have one
+    const existingProducts = savedProducts ? JSON.parse(savedProducts) : [];
+    return existingProducts.map((product: Product) => ({
+      ...product,
+      createdAt: product.createdAt || new Date().toISOString(),
+    }));
   });
 
   const [orders, setOrders] = useState<Order[]>(() => {
     const savedOrders = localStorage.getItem("orders");
-    // Update any existing orders to have one of the valid statuses
+    // Update any existing orders to have valid status and createdAt dates
     const existingOrders = savedOrders ? JSON.parse(savedOrders) : [];
     return existingOrders.map((order: Order) => ({
       ...order,
-      status: ["в пути", "на складе"].includes(order.status) ? order.status : "в пути"
+      status: ["в пути", "на складе"].includes(order.status) ? order.status : "в пути",
+      createdAt: order.createdAt || new Date().toISOString(),
     }));
+  });
+
+  const [database, setDatabase] = useState<PhoneEntry[]>(() => {
+    const savedDatabase = localStorage.getItem("database");
+    return savedDatabase ? JSON.parse(savedDatabase) : [];
   });
 
   const [theme, setTheme] = useState<Theme>(() => {
@@ -104,7 +132,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     maxQuantity: undefined
   });
 
-  const [sortOption, setSortOption] = useState<SortOption>("default");
+  const [sortOption, setSortOption] = useState<SortOption>("dateNewest");
 
   const [settings, setSettings] = useState<Settings>(() => {
     const savedSettings = localStorage.getItem("settings");
@@ -137,6 +165,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const bPriceDesc = 'totalAmount' in b ? b.totalAmount : b.price;
           return bPriceDesc - aPriceDesc;
         
+        case "dateNewest":
+          // Sort by creation date, newest first
+          const aDateNew = new Date('createdAt' in a && a.createdAt ? a.createdAt : 0);
+          const bDateNew = new Date('createdAt' in b && b.createdAt ? b.createdAt : 0);
+          return bDateNew.getTime() - aDateNew.getTime();
+          
+        case "dateOldest":
+          // Sort by creation date, oldest first
+          const aDateOld = new Date('createdAt' in a && a.createdAt ? a.createdAt : 0);
+          const bDateOld = new Date('createdAt' in b && b.createdAt ? b.createdAt : 0);
+          return aDateOld.getTime() - bDateOld.getTime();
+          
         default:
           return 0;
       }
@@ -171,7 +211,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     orders.filter(order => {
       if (searchFilters.type !== "orders") return true;
       
-      const matchesNameOrId = searchFilters.query.trim() === "" || 
+      // Check for ID search using # prefix
+      const searchTermForId = searchFilters.query.startsWith('#') 
+        ? searchFilters.query.substring(1) 
+        : '';
+        
+      const matchesId = searchTermForId
+        ? order.id.endsWith(searchTermForId)
+        : false;
+      
+      const matchesNameOrStandardId = searchFilters.query.trim() === "" || 
         order.customerName.toLowerCase().includes(searchFilters.query.toLowerCase()) ||
         order.id.includes(searchFilters.query);
       
@@ -184,10 +233,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         (searchFilters.minPrice === undefined || order.totalAmount >= searchFilters.minPrice) &&
         (searchFilters.maxPrice === undefined || order.totalAmount <= searchFilters.maxPrice);
       
-      return (matchesNameOrId || matchesProductNames) && matchesPrice;
+      return (matchesNameOrStandardId || matchesProductNames || matchesId) && matchesPrice;
     }),
     sortOption
   );
+  
+  // Filtered database entries
+  const filteredDatabase = database.filter(entry => {
+    if (searchFilters.type !== "database") return true;
+    
+    // For database search, we match partial phone number sequences
+    if (searchFilters.query.trim() === "") return true;
+    
+    // Check if the searchQuery is a continuous sequence of digits within the phone number
+    const digitsOnly = searchFilters.query.replace(/\D/g, '');
+    if (digitsOnly === "") return true;
+    
+    return entry.phoneNumber.includes(digitsOnly);
+  });
 
   // Save to localStorage effects
   useEffect(() => {
@@ -197,6 +260,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem("orders", JSON.stringify(orders));
   }, [orders]);
+  
+  useEffect(() => {
+    localStorage.setItem("database", JSON.stringify(database));
+  }, [database]);
 
   useEffect(() => {
     localStorage.setItem("theme", theme);
@@ -211,15 +278,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSettings(prev => ({ ...prev, ...newSettings }));
   };
 
-  const addProduct = (product: Omit<Product, "id">) => {
+  const addProduct = (product: Omit<Product, "id" | "createdAt">) => {
     const newProduct = {
       ...product,
       id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
     };
     setProducts([...products, newProduct]);
     toast({
       title: "Товар добавлен",
       description: `"${product.name}" успешно добавлен в каталог`,
+      className: "border-green-500 bg-white",
+      duration: 2000,
     });
   };
 
@@ -232,6 +302,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     toast({
       title: "Товар обновлен",
       description: `"${updatedProduct.name}" успешно обновлен`,
+      className: "border-green-500 bg-white",
+      duration: 2000,
     });
   };
 
@@ -242,6 +314,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       title: "Товар удален",
       description: productToDelete ? `"${productToDelete.name}" удален из каталога` : "Товар удален из каталога",
       variant: "destructive",
+      className: "border-green-500 bg-white",
+      duration: 2000,
     });
   };
 
@@ -257,7 +331,54 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
   };
 
-  const addOrder = (order: Omit<Order, "id">) => {
+  // Helper to update database when adding, updating, or deleting orders
+  const updatePhoneDatabase = (order: Order, isDeleted = false) => {
+    if (!order.phoneNumber) return;
+
+    setDatabase(prevDatabase => {
+      // Find existing phone entry
+      const existingEntryIndex = prevDatabase.findIndex(
+        entry => entry.phoneNumber === order.phoneNumber
+      );
+      
+      // Prepare order info for database
+      const orderInfo = {
+        id: order.id,
+        date: order.date,
+        productName: order.products.length > 0 ? order.products[0].name : "Без товара",
+        totalAmount: order.totalAmount,
+        isDeleted: isDeleted
+      };
+      
+      if (existingEntryIndex >= 0) {
+        // Update existing entry
+        const updatedDatabase = [...prevDatabase];
+        const existingEntry = updatedDatabase[existingEntryIndex];
+        
+        // Check if this order already exists in the entry
+        const orderIndex = existingEntry.orders.findIndex(o => o.id === order.id);
+        
+        if (orderIndex >= 0) {
+          // Update existing order
+          existingEntry.orders[orderIndex] = orderInfo;
+        } else {
+          // Add new order to existing entry
+          existingEntry.orders.push(orderInfo);
+        }
+        
+        updatedDatabase[existingEntryIndex] = existingEntry;
+        return updatedDatabase;
+      } else {
+        // Create new entry
+        return [...prevDatabase, {
+          phoneNumber: order.phoneNumber,
+          orders: [orderInfo]
+        }];
+      }
+    });
+  };
+
+  const addOrder = (order: Omit<Order, "id" | "createdAt">) => {
     // Ensure order has one of the valid statuses
     const validStatus = ["в пути", "на складе"].includes(order.status || "") 
       ? order.status 
@@ -267,12 +388,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...order,
       id: Date.now().toString(),
       status: validStatus,
+      createdAt: new Date().toISOString(),
     };
     
     setOrders([...orders, newOrder]);
+    
+    // Update database if phone number is provided
+    if (order.phoneNumber) {
+      updatePhoneDatabase(newOrder);
+    }
+    
     toast({
       title: "Заказ создан",
       description: `Заказ #${newOrder.id.slice(-4)} успешно создан`,
+      className: "border-green-500 bg-white",
+      duration: 2000,
     });
   };
 
@@ -293,9 +423,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       )
     );
     
+    // Update database if phone number is provided
+    if (updatedOrder.phoneNumber) {
+      updatePhoneDatabase(validatedOrder);
+    }
+    
     toast({
       title: "Заказ обновлен",
       description: `Заказ #${validatedOrder.id.slice(-4)} успешно обновлен`,
+      className: "border-green-500 bg-white",
+      duration: 2000,
     });
   };
 
@@ -306,25 +443,56 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
 
+    const updatedOrder = orders.find(order => order.id === id);
+    
     setOrders(
       orders.map((order) =>
         order.id === id ? { ...order, status } : order
       )
     );
     
+    // Update database if order has a phone number
+    if (updatedOrder && updatedOrder.phoneNumber) {
+      updatePhoneDatabase({...updatedOrder, status});
+    }
+    
     const orderNumber = id.slice(-4);
     toast({
       title: "Статус изменен",
       description: `Заказ #${orderNumber} теперь в статусе "${status}"`,
+      className: "border-green-500 bg-white",
+      duration: 2000,
     });
   };
 
   const deleteOrder = (id: string) => {
+    const orderToDelete = orders.find(order => order.id === id);
+    
+    // Mark as deleted in the database but don't remove
+    if (orderToDelete && orderToDelete.phoneNumber) {
+      updatePhoneDatabase(orderToDelete, true);
+    }
+    
     setOrders(orders.filter((order) => order.id !== id));
+    
     toast({
       title: "Заказ удален",
       description: `Заказ #${id.slice(-4)} успешно удален`,
       variant: "destructive",
+      className: "border-green-500 bg-white",
+      duration: 2000,
+    });
+  };
+  
+  const deletePhoneEntry = (phoneNumber: string) => {
+    setDatabase(database.filter(entry => entry.phoneNumber !== phoneNumber));
+    
+    toast({
+      title: "Запись удалена",
+      description: `Номер ${phoneNumber} удален из базы данных`,
+      variant: "destructive",
+      className: "border-green-500 bg-white",
+      duration: 2000,
     });
   };
 
@@ -344,6 +512,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         searchFilters,
         sortOption,
         settings,
+        database,
+        filteredDatabase,
         addProduct,
         updateProduct,
         deleteProduct,
@@ -352,6 +522,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateOrder,
         updateOrderStatus,
         deleteOrder,
+        deletePhoneEntry,
         toggleTheme,
         setSidebarOpen,
         setSearchFilters,

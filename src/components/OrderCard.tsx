@@ -117,9 +117,37 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
                   <Hash className="h-2.5 w-2.5 mr-0.5" />
                   {shortId}
                 </Badge>
-                <Badge variant={getBadgeVariant(order.status)} className="ml-1">
-                  {order.status}
-                </Badge>
+                
+                {/* Status dropdown now directly in the status badge */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="h-6 px-2 ml-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Badge variant={getBadgeVariant(order.status)} className="mr-1">
+                        {order.status}
+                      </Badge>
+                      <ChevronDown className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {statuses.map((status) => (
+                      <DropdownMenuItem
+                        key={status}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleStatusChange(status);
+                        }}
+                        className={status === order.status ? "bg-accent font-medium" : ""}
+                      >
+                        {status}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               
               <div className="flex items-center text-sm text-muted-foreground mt-1 gap-3">
@@ -169,33 +197,8 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
                 <Edit className="h-4 w-4" />
               </Button>
               
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    className="h-7"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <span className="text-sm font-medium">{order.totalAmount.toLocaleString()} ₸</span>
-                    <ChevronDown className="h-3 w-3 ml-1" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {statuses.map((status) => (
-                    <DropdownMenuItem
-                      key={status}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleStatusChange(status);
-                      }}
-                      className={status === order.status ? "bg-accent font-medium" : ""}
-                    >
-                      {status}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {/* Display the price without dropdown */}
+              <div className="text-sm font-medium px-2">{order.totalAmount.toLocaleString()} ₸</div>
             </div>
           </div>
         </Card>
@@ -304,6 +307,11 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
               >
                 <Edit className="h-4 w-4" />
               </Button>
+              
+              {/* Display price */}
+              <div className="flex items-center">
+                <span className="text-sm font-medium">{order.totalAmount.toLocaleString()} ₸</span>
+              </div>
             </div>
           </div>
           
@@ -330,7 +338,7 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
               )}
             </div>
             
-            {/* Status button - positioned at the bottom right */}
+            {/* Status dropdown - positioned at the bottom right */}
             <div className="mt-auto flex justify-end">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

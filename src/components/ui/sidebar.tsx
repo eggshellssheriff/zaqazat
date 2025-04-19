@@ -106,9 +106,43 @@ const SidebarProvider = React.forwardRef<
         }
       }
 
+      // Add click outside handler for mobile
+      const handleClickOutside = (event: MouseEvent) => {
+        // Check if it's on mobile view
+        if (!isMobile) return
+        
+        // Get all sidebar elements
+        const sidebarElements = document.querySelectorAll('[data-sidebar="sidebar"]')
+        const triggerElements = document.querySelectorAll('[data-sidebar="trigger"]')
+        
+        // Check if click is outside sidebar and trigger
+        let isOutside = true
+        sidebarElements.forEach(element => {
+          if (element.contains(event.target as Node)) {
+            isOutside = false
+          }
+        })
+        
+        triggerElements.forEach(element => {
+          if (element.contains(event.target as Node)) {
+            isOutside = false
+          }
+        })
+        
+        // Close sidebar if click is outside
+        if (isOutside && openMobile) {
+          setOpenMobile(false)
+        }
+      }
+
       window.addEventListener("keydown", handleKeyDown)
-      return () => window.removeEventListener("keydown", handleKeyDown)
-    }, [toggleSidebar])
+      document.addEventListener("mousedown", handleClickOutside)
+      
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown)
+        document.removeEventListener("mousedown", handleClickOutside)
+      }
+    }, [toggleSidebar, isMobile, openMobile, setOpenMobile])
 
     // We add a state so that we can do data-state="expanded" or "collapsed".
     // This makes it easier to style the sidebar with Tailwind classes.
@@ -321,7 +355,7 @@ const SidebarInset = React.forwardRef<
       ref={ref}
       className={cn(
         "relative flex min-h-svh flex-1 flex-col bg-background",
-        "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
+        "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
         className
       )}
       {...props}

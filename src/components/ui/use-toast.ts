@@ -1,18 +1,18 @@
 
 import { useToast, toast } from "@/hooks/use-toast";
 
-// Настройка компактных уведомлений снизу экрана
+// Configure compact notifications at the bottom center of the screen
 const originalToast = toast;
 
-// Создаем обертку над оригинальным toast
+// Create a wrapper over the original toast
 const compactToast = (props: Parameters<typeof originalToast>[0]) => {
   return originalToast({
     ...props,
-    // Добавляем классы для стилизации
-    className: `${props.className || ''} compact-toast swipeable-toast`,
-    // Уменьшаем время отображения
+    // Add classes for styling
+    className: `${props.className || ''} compact-toast swipeable-toast pointer-events-auto`,
+    // Reduce display time
     duration: props.duration || 2000,
-    // В новой версии позиция не устанавливается напрямую
+    // In the new version the position is not set directly
   });
 };
 

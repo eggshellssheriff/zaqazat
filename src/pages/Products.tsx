@@ -11,7 +11,7 @@ import { Plus, ArrowUp } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Products = () => {
-  const { products, filteredProducts } = useApp();
+  const { products, filteredProducts, setSearchFilters, setSortOption } = useApp();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("list"); // Default to list view
@@ -45,11 +45,10 @@ const Products = () => {
   useEffect(() => {
     return () => {
       // This will run when component unmounts
-      const { setSearchFilters, setSortOption } = useApp();
       setSearchFilters({ type: "products", query: "" });
       setSortOption("dateNewest");
     };
-  }, []);
+  }, [setSearchFilters, setSortOption]);
 
   return (
     <Layout title="Товары" contentRef={contentRef}>

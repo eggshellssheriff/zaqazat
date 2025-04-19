@@ -12,7 +12,7 @@ import { Plus, ArrowUp, DollarSign } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Orders = () => {
-  const { orders, products, filteredOrders, settings } = useApp();
+  const { orders, products, filteredOrders, settings, setSearchFilters, setSortOption } = useApp();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showConverter, setShowConverter] = useState(false);
@@ -47,11 +47,10 @@ const Orders = () => {
   useEffect(() => {
     return () => {
       // This will run when component unmounts
-      const { setSearchFilters, setSortOption } = useApp();
       setSearchFilters({ type: "orders", query: "" });
       setSortOption("dateNewest");
     };
-  }, []);
+  }, [setSearchFilters, setSortOption]);
 
   return (
     <Layout title="Заказы" contentRef={contentRef}>

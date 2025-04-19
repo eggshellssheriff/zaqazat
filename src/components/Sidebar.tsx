@@ -1,4 +1,3 @@
-
 import { Link, useLocation } from "react-router-dom";
 import { useApp } from "@/lib/context";
 import { cn } from "@/lib/utils";
@@ -11,9 +10,24 @@ import {
   Settings, 
   Sun, 
   Moon,
-  Database
+  Database,
+  Menu
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+
+export function SidebarToggle() {
+  const { setSidebarOpen } = useApp();
+  return (
+    <Button 
+      variant="ghost" 
+      size="icon" 
+      onClick={() => setSidebarOpen(true)}
+      className="md:hidden"
+    >
+      <Menu className="h-5 w-5" />
+    </Button>
+  );
+}
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -23,7 +37,6 @@ export function Sidebar({ className }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile Sidebar (Sheet) */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent side="left" className="p-0">
           <div className="space-y-4 py-4">
@@ -81,7 +94,6 @@ export function Sidebar({ className }: SidebarProps) {
         </SheetContent>
       </Sheet>
 
-      {/* Desktop Sidebar */}
       <div className={cn("pb-12 hidden md:block", className)}>
         <div className="space-y-4 py-4">
           <div className="px-4 py-2">

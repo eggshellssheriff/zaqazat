@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,11 +17,9 @@ export function CurrencyConverter({ onClose }: CurrencyConverterProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  // Fetch exchange rate
   const fetchExchangeRate = async () => {
     setIsLoading(true);
     try {
-      // Use a free currency API to get CNY to KZT conversion
       const response = await fetch('https://open.er-api.com/v6/latest/CNY');
       const data = await response.json();
       
@@ -43,7 +40,6 @@ export function CurrencyConverter({ onClose }: CurrencyConverterProps) {
         variant: "destructive",
       });
       
-      // Use fallback rate if available
       const savedRate = localStorage.getItem('yuanToTengeRate');
       if (savedRate) {
         setExchangeRate(parseFloat(savedRate));
@@ -57,7 +53,6 @@ export function CurrencyConverter({ onClose }: CurrencyConverterProps) {
     }
   };
 
-  // Calculate conversion
   const convertYuanToTenge = (yuan: string) => {
     if (!yuan || !exchangeRate) {
       setTengeAmount("");
@@ -90,9 +85,7 @@ export function CurrencyConverter({ onClose }: CurrencyConverterProps) {
     setYuanAmount(yuanValue.toFixed(2));
   };
 
-  // Initialize
   useEffect(() => {
-    // First try to use saved rate to avoid unnecessary API calls
     const savedRate = localStorage.getItem('yuanToTengeRate');
     const savedDate = localStorage.getItem('yuanToTengeRateUpdated');
     
@@ -100,23 +93,19 @@ export function CurrencyConverter({ onClose }: CurrencyConverterProps) {
       const parsedRate = parseFloat(savedRate);
       const parsedDate = new Date(savedDate);
       
-      // Check if the rate is less than 24 hours old
       const isRecent = (new Date().getTime() - parsedDate.getTime()) < 24 * 60 * 60 * 1000;
       
       if (isRecent) {
         setExchangeRate(parsedRate);
         setLastUpdated(parsedDate);
       } else {
-        // Rate is too old, fetch new one
         fetchExchangeRate();
       }
     } else {
-      // No saved rate, fetch from API
       fetchExchangeRate();
     }
   }, []);
 
-  // Format the last updated date
   const formattedLastUpdated = lastUpdated ? 
     new Intl.DateTimeFormat('ru', {
       day: '2-digit',
@@ -127,7 +116,7 @@ export function CurrencyConverter({ onClose }: CurrencyConverterProps) {
     }).format(lastUpdated) : '';
 
   return (
-    <Card className="currency-converter">
+    <Card className="currency-converter fixed right-6 bottom-24 w-80 z-50 shadow-lg">
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg">Конвертер валют</CardTitle>

@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 
@@ -123,7 +122,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
-  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+  const [searchFiltersState, setSearchFiltersState] = useState<SearchFilters>({
     type: "products",
     query: "",
     minPrice: undefined,
@@ -183,23 +182,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  // Filtered products based on search and filters, with sorting applied
+  // Fix the type error by creating a proper setSearchFilters function
+  const setSearchFilters = (filters: Partial<SearchFilters>) => {
+    setSearchFiltersState(prevFilters => ({
+      ...prevFilters,
+      ...filters
+    }));
+  };
+
+  // Use searchFiltersState instead of searchFilters in the filtered data calculations
   const filteredProducts = applySorting(
     products.filter(product => {
-      if (searchFilters.type !== "products") return true;
+      if (searchFiltersState.type !== "products") return true;
       
-      const matchesQuery = searchFilters.query.trim() === "" || 
-        product.name.toLowerCase().includes(searchFilters.query.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchFilters.query.toLowerCase()) ||
-        product.price.toString().includes(searchFilters.query);
+      const matchesQuery = searchFiltersState.query.trim() === "" || 
+        product.name.toLowerCase().includes(searchFiltersState.query.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchFiltersState.query.toLowerCase()) ||
+        product.price.toString().includes(searchFiltersState.query);
       
       const matchesPrice = 
-        (searchFilters.minPrice === undefined || product.price >= searchFilters.minPrice) &&
-        (searchFilters.maxPrice === undefined || product.price <= searchFilters.maxPrice);
+        (searchFiltersState.minPrice === undefined || product.price >= searchFiltersState.minPrice) &&
+        (searchFiltersState.maxPrice === undefined || product.price <= searchFiltersState.maxPrice);
       
       const matchesQuantity = 
-        (searchFilters.minQuantity === undefined || product.quantity >= searchFilters.minQuantity) &&
-        (searchFilters.maxQuantity === undefined || product.quantity <= searchFilters.maxQuantity);
+        (searchFiltersState.minQuantity === undefined || product.quantity >= searchFiltersState.minQuantity) &&
+        (searchFiltersState.maxQuantity === undefined || product.quantity <= searchFiltersState.maxQuantity);
       
       return matchesQuery && matchesPrice && matchesQuantity;
     }),
@@ -209,29 +216,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Filtered orders based on search and filters, with sorting applied
   const filteredOrders = applySorting(
     orders.filter(order => {
-      if (searchFilters.type !== "orders") return true;
+      if (searchFiltersState.type !== "orders") return true;
       
       // Check for ID search using # prefix
-      const searchTermForId = searchFilters.query.startsWith('#') 
-        ? searchFilters.query.substring(1) 
+      const searchTermForId = searchFiltersState.query.startsWith('#') 
+        ? searchFiltersState.query.substring(1) 
         : '';
         
       const matchesId = searchTermForId
         ? order.id.endsWith(searchTermForId)
         : false;
       
-      const matchesNameOrStandardId = searchFilters.query.trim() === "" || 
-        order.customerName.toLowerCase().includes(searchFilters.query.toLowerCase()) ||
-        order.id.includes(searchFilters.query);
+      const matchesNameOrStandardId = searchFiltersState.query.trim() === "" || 
+        order.customerName.toLowerCase().includes(searchFiltersState.query.toLowerCase()) ||
+        order.id.includes(searchFiltersState.query);
       
       // Search in products inside the order
-      const matchesProductNames = searchFilters.query.trim() === "" || 
-        order.products.some(p => p.name.toLowerCase().includes(searchFilters.query.toLowerCase()));
+      const matchesProductNames = searchFiltersState.query.trim() === "" || 
+        order.products.some(p => p.name.toLowerCase().includes(searchFiltersState.query.toLowerCase()));
       
       // Filter by order total price
       const matchesPrice = 
-        (searchFilters.minPrice === undefined || order.totalAmount >= searchFilters.minPrice) &&
-        (searchFilters.maxPrice === undefined || order.totalAmount <= searchFilters.maxPrice);
+        (searchFiltersState.minPrice === undefined || order.totalAmount >= searchFiltersState.minPrice) &&
+        (searchFiltersState.maxPrice === undefined || order.totalAmount <= searchFiltersState.maxPrice);
       
       return (matchesNameOrStandardId || matchesProductNames || matchesId) && matchesPrice;
     }),
@@ -240,13 +247,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   
   // Filtered database entries
   const filteredDatabase = database.filter(entry => {
-    if (searchFilters.type !== "database") return true;
+    if (searchFiltersState.type !== "database") return true;
     
     // For database search, we match partial phone number sequences
-    if (searchFilters.query.trim() === "") return true;
+    if (searchFiltersState.query.trim() === "") return true;
     
     // Check if the searchQuery is a continuous sequence of digits within the phone number
-    const digitsOnly = searchFilters.query.replace(/\D/g, '');
+    const digitsOnly = searchFiltersState.query.replace(/\D/g, '');
     if (digitsOnly === "") return true;
     
     return entry.phoneNumber.includes(digitsOnly);
@@ -509,7 +516,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         sidebarOpen,
         filteredProducts,
         filteredOrders,
-        searchFilters,
+        searchFilters: searchFiltersState,
         sortOption,
         settings,
         database,

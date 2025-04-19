@@ -117,7 +117,7 @@ export function CurrencyConverter({ onClose }: CurrencyConverterProps) {
     }).format(lastUpdated) : '';
 
   return (
-    <Card className="currency-converter fixed right-6 bottom-24 w-80 z-50 shadow-lg">
+    <Card className="fixed right-6 bottom-24 w-80 z-50 bg-card shadow-lg border">
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg">Конвертер валют</CardTitle>

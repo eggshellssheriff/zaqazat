@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useApp } from "@/lib/context";
 import {
@@ -66,14 +65,12 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
   const [showFullImage, setShowFullImage] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(!!order.image);
 
-  // Format the date to DD.MM.YY format
   const formattedDate = new Date(order.date).toLocaleDateString("ru-RU", {
     day: "2-digit",
     month: "2-digit",
     year: "2-digit"
   });
 
-  // Get shortened order ID (last 4 digits)
   const shortId = order.id.slice(-4);
 
   const handleDelete = () => {
@@ -96,10 +93,8 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
     }
   };
 
-  // Limited status options
   const statuses = ["в пути", "на складе"];
-  
-  // Handle image click to show full screen
+
   const handleImageClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowFullImage(!showFullImage);
@@ -118,13 +113,12 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
                   {shortId}
                 </Badge>
                 
-                {/* Status dropdown now directly in the status badge */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      className="h-6 px-2 ml-1"
+                      className="h-6 px-2 hover:bg-transparent"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Badge variant={getBadgeVariant(order.status)} className="mr-1">
@@ -133,7 +127,10 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
                       <ChevronDown className="h-3 w-3" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent 
+                    align="end" 
+                    className="w-32 bg-popover border shadow-md"
+                  >
                     {statuses.map((status) => (
                       <DropdownMenuItem
                         key={status}
@@ -197,13 +194,11 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
                 <Edit className="h-4 w-4" />
               </Button>
               
-              {/* Display the price without dropdown */}
               <div className="text-sm font-medium px-2">{order.totalAmount.toLocaleString()} ₸</div>
             </div>
           </div>
         </Card>
 
-        {/* Rest of the dialogs */}
         <OrderForm
           initialData={order}
           open={showEditDialog}
@@ -261,7 +256,6 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
     <>
       <Card className="overflow-hidden cursor-pointer relative" onClick={() => setShowDetailsModal(true)}>
         <div className="flex p-3">
-          {/* Left content */}
           <div className="flex-1 min-w-0 mr-3">
             <div className="flex items-center mb-1">
               <h3 className="font-medium text-base truncate mr-1">
@@ -280,7 +274,6 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
               {order.customerName}
             </div>
             
-            {/* Action buttons - positioned at the bottom left */}
             <div className="flex gap-2 mt-3">
               <Button
                 variant="ghost"
@@ -308,14 +301,12 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
                 <Edit className="h-4 w-4" />
               </Button>
               
-              {/* Display price */}
               <div className="flex items-center">
                 <span className="text-sm font-medium">{order.totalAmount.toLocaleString()} ₸</span>
               </div>
             </div>
           </div>
           
-          {/* Right content with image */}
           <div className="w-[100px] flex flex-col">
             <div 
               className="h-[100px] bg-muted/20 rounded overflow-hidden mb-2 cursor-pointer"
@@ -338,13 +329,13 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
               )}
             </div>
             
-            {/* Status dropdown - positioned at the bottom right */}
-            <div className="mt-auto flex justify-end">
+            <div className="mt-auto">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="ghost" 
                     size="sm"
+                    className="w-full justify-between hover:bg-transparent"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Badge variant={getBadgeVariant(order.status)} className="mr-1">
@@ -353,7 +344,10 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
                     <ChevronDown className="h-3 w-3" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent 
+                  align="end" 
+                  className="w-32 bg-popover border shadow-md"
+                >
                   {statuses.map((status) => (
                     <DropdownMenuItem
                       key={status}

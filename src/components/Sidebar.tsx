@@ -1,3 +1,4 @@
+
 import { Link, useLocation } from "react-router-dom";
 import { useApp } from "@/lib/context";
 import { cn } from "@/lib/utils";
@@ -21,7 +22,10 @@ export function SidebarToggle() {
     <Button 
       variant="ghost" 
       size="icon" 
-      onClick={() => setSidebarOpen(true)}
+      onClick={(e) => {
+        e.preventDefault(); // Prevent default to avoid page refresh
+        setSidebarOpen(true);
+      }}
       className="md:hidden"
     >
       <Menu className="h-5 w-5" />
@@ -34,6 +38,13 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 export function Sidebar({ className }: SidebarProps) {
   const { theme, toggleTheme, setSidebarOpen, sidebarOpen, products, orders, database } = useApp();
   const location = useLocation();
+
+  const handleLinkClick = (e: React.MouseEvent) => {
+    // Only close sidebar on mobile
+    if (window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
+  };
 
   return (
     <>
@@ -48,6 +59,7 @@ export function Sidebar({ className }: SidebarProps) {
                   active={location.pathname === "/products"}
                   icon={<Package className="w-4 h-4 mr-2" />}
                   count={products.length}
+                  onClick={handleLinkClick}
                 >
                   Товары
                 </MobileNavItem>
@@ -56,6 +68,7 @@ export function Sidebar({ className }: SidebarProps) {
                   active={location.pathname === "/orders"}
                   icon={<ShoppingBag className="w-4 h-4 mr-2" />}
                   count={orders.length}
+                  onClick={handleLinkClick}
                 >
                   Заказы
                 </MobileNavItem>
@@ -64,6 +77,7 @@ export function Sidebar({ className }: SidebarProps) {
                   active={location.pathname === "/database"}
                   icon={<Database className="w-4 h-4 mr-2" />}
                   count={database.length}
+                  onClick={handleLinkClick}
                 >
                   База данных
                 </MobileNavItem>
@@ -71,6 +85,7 @@ export function Sidebar({ className }: SidebarProps) {
                   to="/settings"
                   active={location.pathname === "/settings"}
                   icon={<Settings className="w-4 h-4 mr-2" />}
+                  onClick={handleLinkClick}
                 >
                   Настройки
                 </MobileNavItem>
@@ -80,7 +95,10 @@ export function Sidebar({ className }: SidebarProps) {
               <Button 
                 variant="outline" 
                 className="w-full justify-start" 
-                onClick={toggleTheme}
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent default
+                  toggleTheme();
+                }}
                 size="sm"
               >
                 {theme === 'light' 
@@ -138,7 +156,10 @@ export function Sidebar({ className }: SidebarProps) {
             <Button 
               variant="outline" 
               className="w-full justify-start" 
-              onClick={toggleTheme}
+              onClick={(e) => {
+                e.preventDefault(); // Prevent default
+                toggleTheme();
+              }}
               size="sm"
             >
               {theme === 'light' 
@@ -160,11 +181,12 @@ interface NavItemProps {
   children: React.ReactNode;
   icon?: React.ReactNode;
   count?: number;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
-function MobileNavItem({ to, active, children, icon, count }: NavItemProps) {
+function MobileNavItem({ to, active, children, icon, count, onClick }: NavItemProps) {
   return (
-    <Link to={to} className="block">
+    <Link to={to} className="block" onClick={onClick}>
       <Button
         variant={active ? "default" : "ghost"}
         className="w-full justify-start"

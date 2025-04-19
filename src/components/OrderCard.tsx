@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useApp } from "@/lib/context";
 import {
@@ -25,7 +26,8 @@ import {
   ImageOff,
   User,
   Phone,
-  Clock
+  Clock,
+  Hash
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -71,6 +73,9 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
     year: "2-digit"
   });
 
+  // Get shortened order ID (last 4 digits)
+  const shortId = order.id.slice(-4);
+
   const handleDelete = () => {
     deleteOrder(order.id);
     setShowDeleteDialog(false);
@@ -108,7 +113,11 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
             <div className="flex-grow">
               <div className="flex items-center gap-2">
                 <span className="font-medium">{order.products[0]?.name || "Нет товаров"}</span>
-                <Badge variant={getBadgeVariant(order.status)} className="ml-2">
+                <Badge variant="outline" className="ml-1 text-xs px-1.5 py-0">
+                  <Hash className="h-2.5 w-2.5 mr-0.5" />
+                  {shortId}
+                </Badge>
+                <Badge variant={getBadgeVariant(order.status)} className="ml-1">
                   {order.status}
                 </Badge>
               </div>
@@ -251,9 +260,15 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
         <div className="flex p-3">
           {/* Left content */}
           <div className="flex-1 min-w-0 mr-3">
-            <h3 className="font-medium text-base truncate">
-              {order.products[0]?.name || "Нет товаров"}
-            </h3>
+            <div className="flex items-center mb-1">
+              <h3 className="font-medium text-base truncate mr-1">
+                {order.products[0]?.name || "Нет товаров"}
+              </h3>
+              <Badge variant="outline" className="text-xs px-1.5 py-0">
+                <Hash className="h-2.5 w-2.5 mr-0.5" />
+                {shortId}
+              </Badge>
+            </div>
             <div className="flex items-center text-sm text-muted-foreground mt-1">
               <Calendar className="h-3 w-3 mr-1" />
               {formattedDate}

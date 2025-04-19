@@ -79,6 +79,7 @@ interface AppContextType {
   updateOrderStatus: (id: string, status: string) => void;
   deleteOrder: (id: string) => void;
   deletePhoneEntry: (phoneNumber: string) => void;
+  deleteOrderFromDatabase: (phoneNumber: string, orderId: string) => void;
   toggleTheme: () => void;
   setSidebarOpen: (open: boolean) => void;
   setSearchFilters: (filters: Partial<SearchFilters>) => void;
@@ -293,9 +294,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     setProducts([...products, newProduct]);
     toast({
-      title: "Товар добавлен",
-      description: `"${product.name}" успешно добавлен в каталог`,
-      className: "border-green-500 bg-white",
+      title: "Успех",
+      description: "",
+      className: "fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white border-none py-2 px-4 rounded w-auto",
       duration: 2000,
     });
   };
@@ -307,9 +308,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       )
     );
     toast({
-      title: "Товар обновлен",
-      description: `"${updatedProduct.name}" успешно обновлен`,
-      className: "border-green-500 bg-white",
+      title: "Успех",
+      description: "",
+      className: "fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white border-none py-2 px-4 rounded w-auto",
       duration: 2000,
     });
   };
@@ -318,10 +319,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const productToDelete = products.find(product => product.id === id);
     setProducts(products.filter((product) => product.id !== id));
     toast({
-      title: "Товар удален",
-      description: productToDelete ? `"${productToDelete.name}" удален из каталога` : "Товар удален из каталога",
-      variant: "destructive",
-      className: "border-green-500 bg-white",
+      title: "Успех",
+      description: "",
+      className: "fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white border-none py-2 px-4 rounded w-auto",
       duration: 2000,
     });
   };
@@ -406,9 +406,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     
     toast({
-      title: "Заказ создан",
-      description: `Заказ #${newOrder.id.slice(-4)} успешно создан`,
-      className: "border-green-500 bg-white",
+      title: "Успех",
+      description: "",
+      className: "fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white border-none py-2 px-4 rounded w-auto",
       duration: 2000,
     });
   };
@@ -436,9 +436,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     
     toast({
-      title: "Заказ обновлен",
-      description: `Заказ #${validatedOrder.id.slice(-4)} успешно обновлен`,
-      className: "border-green-500 bg-white",
+      title: "Успех",
+      description: "",
+      className: "fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white border-none py-2 px-4 rounded w-auto",
       duration: 2000,
     });
   };
@@ -463,11 +463,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       updatePhoneDatabase({...updatedOrder, status});
     }
     
-    const orderNumber = id.slice(-4);
     toast({
-      title: "Статус изменен",
-      description: `Заказ #${orderNumber} теперь в статусе "${status}"`,
-      className: "border-green-500 bg-white",
+      title: "Успех",
+      description: "",
+      className: "fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white border-none py-2 px-4 rounded w-auto",
       duration: 2000,
     });
   };
@@ -483,10 +482,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setOrders(orders.filter((order) => order.id !== id));
     
     toast({
-      title: "Заказ удален",
-      description: `Заказ #${id.slice(-4)} успешно удален`,
-      variant: "destructive",
-      className: "border-green-500 bg-white",
+      title: "Успех",
+      description: "",
+      className: "fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white border-none py-2 px-4 rounded w-auto",
       duration: 2000,
     });
   };
@@ -495,10 +493,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setDatabase(database.filter(entry => entry.phoneNumber !== phoneNumber));
     
     toast({
-      title: "Запись удалена",
-      description: `Номер ${phoneNumber} удален из базы данных`,
-      variant: "destructive",
-      className: "border-green-500 bg-white",
+      title: "Успех",
+      description: "",
+      className: "fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white border-none py-2 px-4 rounded w-auto",
+      duration: 2000,
+    });
+  };
+
+  const deleteOrderFromDatabase = (phoneNumber: string, orderId: string) => {
+    setDatabase(prevDatabase => {
+      return prevDatabase.map(entry => {
+        if (entry.phoneNumber === phoneNumber) {
+          // Filter out the specific order
+          return {
+            ...entry,
+            orders: entry.orders.filter(order => order.id !== orderId)
+          };
+        }
+        return entry;
+      }).filter(entry => entry.orders.length > 0); // Remove entries with no orders
+    });
+    
+    toast({
+      title: "Успех",
+      description: "",
+      className: "fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white border-none py-2 px-4 rounded w-auto",
       duration: 2000,
     });
   };
@@ -530,6 +549,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateOrderStatus,
         deleteOrder,
         deletePhoneEntry,
+        deleteOrderFromDatabase,
         toggleTheme,
         setSidebarOpen,
         setSearchFilters,

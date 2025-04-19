@@ -1,5 +1,5 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Layout } from "@/components/Layout";
 import { useApp } from "@/lib/context";
 import { Button } from "@/components/ui/button";
@@ -20,20 +20,20 @@ const Orders = () => {
   const contentRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     if (contentRef.current) {
       setShowScrollTop(contentRef.current.scrollTop > 300);
     }
-  };
+  }, []);
 
-  const scrollToTop = () => {
+  const scrollToTop = useCallback(() => {
     if (contentRef.current) {
       contentRef.current.scrollTo({
         top: 0,
         behavior: "smooth",
       });
     }
-  };
+  }, []);
 
   useEffect(() => {
     const currentRef = contentRef.current;
@@ -41,16 +41,16 @@ const Orders = () => {
       currentRef.addEventListener("scroll", handleScroll);
       return () => currentRef.removeEventListener("scroll", handleScroll);
     }
-  }, []);
+  }, [handleScroll]);
 
-  // Reset all filters and settings when leaving the page
+  // Reset all filters and settings when leaving the page - but only once when component unmounts
   useEffect(() => {
+    // This will run when component unmounts
     return () => {
-      // This will run when component unmounts
       setSearchFilters({ type: "orders", query: "" });
       setSortOption("dateNewest");
     };
-  }, [setSearchFilters, setSortOption]);
+  }, []); // Empty dependency array to run only on unmount
 
   return (
     <Layout title="Заказы" contentRef={contentRef}>

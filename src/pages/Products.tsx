@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Layout } from "@/components/Layout";
 import { useApp } from "@/lib/context";
@@ -75,7 +76,7 @@ const Products = () => {
             <p className="text-muted-foreground mb-4">
               Добавьте первый товар, чтобы начать управление
             </p>
-            <Button onClick={() => setAddDialogOpen(true)} className="bg-green-500 hover:bg-green-600">
+            <Button onClick={() => setAddDialogOpen(true)} className="bg-primary hover:bg-primary/90">
               <Plus className="mr-2 h-4 w-4" />
               Добавить товар
             </Button>

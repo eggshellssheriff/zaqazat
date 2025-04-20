@@ -33,7 +33,7 @@ const Notes = () => {
           <Button 
             onClick={() => setAddDialogOpen(true)}
             size="sm"
-            className="bg-green-500 hover:bg-green-600"
+            className="bg-primary hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
           </Button>
@@ -48,7 +48,7 @@ const Notes = () => {
               </p>
               <Button 
                 onClick={() => setAddDialogOpen(true)}
-                className="bg-green-500 hover:bg-green-600"
+                className="bg-primary hover:bg-primary/90"
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Создать заметку

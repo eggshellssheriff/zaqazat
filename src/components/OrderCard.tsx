@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useApp } from "@/lib/context";
 import {
@@ -78,14 +79,14 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
     updateOrderStatus(order.id, status);
   };
 
-  const getBadgeVariant = (status: string) => {
+  const getBadgeClass = (status: string) => {
     switch (status.toLowerCase()) {
       case "в пути":
-        return "status-in-transit";
+        return "status-badge status-in-transit";
       case "на складе":
-        return "status-in-stock";
+        return "status-badge status-in-stock";
       default:
-        return "outline";
+        return "status-badge";
     }
   };
 
@@ -265,9 +266,9 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
                     className="w-full justify-between hover:bg-transparent"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <Badge variant={getBadgeVariant(order.status)} className="mr-1">
+                    <div className={getBadgeClass(order.status)}>
                       {order.status}
-                    </Badge>
+                    </div>
                     <ChevronDown className="h-3 w-3" />
                   </Button>
                 </DropdownMenuTrigger>

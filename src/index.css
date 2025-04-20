@@ -82,3 +82,22 @@
 .function-panel {
   @apply sticky top-0 z-30 bg-background/80 backdrop-blur-sm border-b;
 }
+
+/* Fixed width containers for mobile-like appearance */
+.fixed-width-container {
+  @apply max-w-md mx-auto overflow-hidden;
+}
+
+/* Text truncation for consistent sizing */
+.text-truncate {
+  @apply truncate max-w-full;
+}
+
+/* Product modal overlay */
+.product-modal-overlay {
+  @apply fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4;
+}
+
+.product-modal {
+  @apply w-full max-w-md max-h-[90vh] overflow-y-auto;
+}

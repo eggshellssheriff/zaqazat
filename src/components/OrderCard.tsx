@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useApp } from "@/lib/context";
 import {
@@ -23,9 +24,6 @@ import {
   Trash, 
   ChevronDown, 
   ImageOff,
-  User,
-  Phone,
-  Clock,
   Hash
 } from "lucide-react";
 import {
@@ -62,7 +60,6 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [showFullImage, setShowFullImage] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(!!order.image);
 
   const formattedDate = new Date(order.date).toLocaleDateString("ru-RU", {
@@ -95,79 +92,28 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
 
   const statuses = ["в пути", "на складе"];
 
-  const handleImageClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowFullImage(!showFullImage);
-  };
-
   if (viewMode === "list") {
+    // Simplified list view
     return (
       <>
-        <Card className="overflow-hidden hover:bg-accent/50 transition-colors" onClick={() => setShowDetailsModal(true)}>
+        <Card className="overflow-hidden hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => setShowDetailsModal(true)}>
           <div className="flex items-center p-3">
-            <div className="flex-grow">
+            <div className="flex-grow min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-medium">{order.products[0]?.name || "Нет товаров"}</span>
-                <Badge variant="outline" className="ml-1 text-xs px-1.5 py-0">
+                <span className="font-medium truncate max-w-[120px]">{order.products[0]?.name || "Нет товаров"}</span>
+                <Badge variant="outline" className="ml-1 text-xs px-1.5 py-0 shrink-0">
                   <Hash className="h-2.5 w-2.5 mr-0.5" />
                   {shortId}
                 </Badge>
-                
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      className="h-6 px-2 hover:bg-transparent"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Badge variant={getBadgeVariant(order.status)} className="mr-1">
-                        {order.status}
-                      </Badge>
-                      <ChevronDown className="h-3 w-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align="end" 
-                    className="w-32 bg-popover border shadow-md"
-                  >
-                    {statuses.map((status) => (
-                      <DropdownMenuItem
-                        key={status}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleStatusChange(status);
-                        }}
-                        className={status === order.status ? "bg-accent font-medium" : ""}
-                      >
-                        {status}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </div>
               
-              <div className="flex items-center text-sm text-muted-foreground mt-1 gap-3">
-                <div className="flex items-center">
-                  <User className="h-3 w-3 mr-1" />
-                  <span className="truncate max-w-[120px]">{order.customerName}</span>
-                </div>
-                
-                <div className="flex items-center">
-                  <Clock className="h-3 w-3 mr-1" />
-                  <span>{formattedDate}</span>
-                </div>
-                
-                {order.phoneNumber && (
-                  <div className="flex items-center">
-                    <Phone className="h-3 w-3 mr-1" />
-                    <span>{order.phoneNumber}</span>
-                  </div>
-                )}
+              <div className="flex items-center text-sm text-muted-foreground mt-1">
+                <Calendar className="h-3 w-3 mr-1 shrink-0" />
+                <span>{formattedDate}</span>
               </div>
             </div>
             
-            <div className="flex items-center gap-1 ml-auto">
+            <div className="flex items-center gap-2 ml-auto shrink-0">
               <Button
                 variant="ghost"
                 size="sm"
@@ -194,7 +140,7 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
                 <Edit className="h-4 w-4" />
               </Button>
               
-              <div className="text-sm font-medium px-2">{order.totalAmount.toLocaleString()} ₸</div>
+              <div className="text-sm font-medium px-2 w-[80px] text-right">{order.totalAmount.toLocaleString()} ₸</div>
             </div>
           </div>
         </Card>
@@ -234,47 +180,34 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
             onClose={() => setShowDetailsModal(false)} 
           />
         )}
-        
-        {showFullImage && order.image && (
-          <div 
-            className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center cursor-pointer"
-            onClick={() => setShowFullImage(false)}
-          >
-            <img 
-              src={order.image} 
-              alt={order.customerName} 
-              className="max-w-full max-h-full object-contain"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
-        )}
       </>
     );
   }
 
+  // Grid view (tile)
   return (
     <>
-      <Card className="overflow-hidden cursor-pointer relative" onClick={() => setShowDetailsModal(true)}>
-        <div className="flex p-3">
-          <div className="flex-1 min-w-0 mr-3">
+      <Card className="overflow-hidden cursor-pointer relative h-[200px]" onClick={() => setShowDetailsModal(true)}>
+        <div className="flex p-3 h-full">
+          <div className="flex-1 min-w-0 mr-3 flex flex-col">
             <div className="flex items-center mb-1">
               <h3 className="font-medium text-base truncate mr-1">
                 {order.products[0]?.name || "Нет товаров"}
               </h3>
-              <Badge variant="outline" className="text-xs px-1.5 py-0">
+              <Badge variant="outline" className="text-xs px-1.5 py-0 shrink-0">
                 <Hash className="h-2.5 w-2.5 mr-0.5" />
                 {shortId}
               </Badge>
             </div>
             <div className="flex items-center text-sm text-muted-foreground mt-1">
-              <Calendar className="h-3 w-3 mr-1" />
+              <Calendar className="h-3 w-3 mr-1 shrink-0" />
               {formattedDate}
             </div>
             <div className="mt-1 truncate">
               {order.customerName}
             </div>
             
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-2 mt-auto">
               <Button
                 variant="ghost"
                 size="sm"
@@ -308,10 +241,7 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
           </div>
           
           <div className="w-[100px] flex flex-col">
-            <div 
-              className="h-[100px] bg-muted/20 rounded overflow-hidden mb-2 cursor-pointer"
-              onClick={(e) => order.image && handleImageClick(e)}
-            >
+            <div className="h-[100px] bg-muted/20 rounded overflow-hidden mb-2">
               {order.image ? (
                 <img
                   src={order.image}
@@ -401,20 +331,6 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
           order={order} 
           onClose={() => setShowDetailsModal(false)} 
         />
-      )}
-      
-      {showFullImage && order.image && (
-        <div 
-          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center cursor-pointer"
-          onClick={() => setShowFullImage(false)}
-        >
-          <img 
-            src={order.image} 
-            alt={order.customerName} 
-            className="max-w-full max-h-full object-contain"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
       )}
     </>
   );

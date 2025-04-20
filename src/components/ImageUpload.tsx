@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ImageIcon, UploadCloud, X, AlertTriangle, Crop } from "lucide-react";
+import { UploadCloud, X, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ImageUploadProps {
@@ -10,7 +10,7 @@ interface ImageUploadProps {
   disabled?: boolean;
   maxSize?: number; // in KB
   className?: string;
-  enableCrop?: boolean; // Add this new property
+  enableCrop?: boolean; // Property kept for backwards compatibility but no longer used
 }
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -19,13 +19,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   disabled = false,
   maxSize = 1024, // Default 1MB
   className = "",
-  enableCrop = false // Default to false
+  enableCrop = false // Kept but ignored
 }) => {
   const [preview, setPreview] = useState<string | null>(value);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [croppingMode, setCroppingMode] = useState(false);
-  const [cropArea, setCropArea] = useState({ x: 0, y: 0, width: 100, height: 100 });
   
   // Reset error when value changes
   useEffect(() => {
@@ -88,11 +86,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         setPreview(optimizedImage);
         onChange(optimizedImage);
         setLoading(false);
-        
-        // If crop is enabled, show the crop interface
-        if (enableCrop) {
-          setCroppingMode(true);
-        }
       };
       
       img.onerror = () => {
@@ -113,15 +106,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const handleClear = () => {
     setPreview(null);
     onChange(null);
-    setCroppingMode(false);
-  };
-  
-  const handleCrop = () => {
-    if (!preview) return;
-    
-    // We would implement a real crop here, but for simplicity
-    // just showing the UI elements and setting cropping mode
-    setCroppingMode(!croppingMode);
   };
 
   return (
@@ -147,18 +131,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
               className="w-full h-full object-contain"
             />
             <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              {enableCrop && (
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="secondary"
-                  className="h-6 w-6"
-                  onClick={handleCrop}
-                  disabled={disabled}
-                >
-                  <Crop className="h-3 w-3" />
-                </Button>
-              )}
               <Button
                 type="button"
                 size="icon"
@@ -171,23 +143,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
               </Button>
             </div>
             <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-            
-            {/* Simple cropping overlay */}
-            {croppingMode && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <div className="p-4 bg-background rounded-md shadow-lg">
-                  <p className="mb-3 text-sm font-medium">Обрезка изображения</p>
-                  <div className="flex justify-end gap-2 mt-2">
-                    <Button variant="outline" size="sm" onClick={() => setCroppingMode(false)}>
-                      Отмена
-                    </Button>
-                    <Button size="sm" className="bg-green-500 hover:bg-green-600" onClick={() => setCroppingMode(false)}>
-                      Применить
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-4 px-2">
@@ -202,11 +157,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                 <p className="text-xs text-center text-muted-foreground">
                   Перетащите сюда изображение<br />или нажмите для выбора
                 </p>
-                {enableCrop && (
-                  <p className="text-xs text-center text-muted-foreground mt-1">
-                    Доступна обрезка
-                  </p>
-                )}
               </>
             )}
           </div>
@@ -215,7 +165,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           type="file"
           accept="image/*"
           onChange={handleUpload}
-          disabled={disabled || croppingMode}
+          disabled={disabled}
           className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
         />
       </div>

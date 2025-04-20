@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,7 +48,6 @@ type OrderFormProps = {
 export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000 }: OrderFormProps) {
   const { addOrder, updateOrder, products: availableProducts } = useApp();
   
-  // Base order details
   const [customerName, setCustomerName] = useState(initialData?.customerName || "");
   const [date, setDate] = useState(initialData?.date || new Date().toISOString().split("T")[0]);
   const [status, setStatus] = useState(initialData?.status || "в пути");
@@ -57,21 +55,17 @@ export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000
   const [description, setDescription] = useState(initialData?.description || "");
   const [image, setImage] = useState<string | null>(initialData?.image || null);
   
-  // Simple product management
   const [productName, setProductName] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("1");
   
-  // Selected product
   const [selectedProduct, setSelectedProduct] = useState("");
   
-  // UI states
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   
   const isEditMode = !!initialData;
   
-  // Form validation
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
@@ -93,7 +87,6 @@ export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000
     return Object.keys(newErrors).length === 0;
   };
   
-  // Handle submit
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -132,7 +125,6 @@ export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000
     resetForm();
   };
   
-  // Reset form
   const resetForm = () => {
     if (!isEditMode) {
       setCustomerName("");
@@ -148,7 +140,6 @@ export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000
     }
   };
   
-  // Handle product selection
   useEffect(() => {
     if (selectedProduct) {
       const product = availableProducts.find(p => p.id === selectedProduct);
@@ -159,7 +150,6 @@ export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000
     }
   }, [selectedProduct, availableProducts]);
   
-  // Initialize form with initial data
   useEffect(() => {
     if (isEditMode && initialData) {
       if (initialData.products.length > 0) {
@@ -168,7 +158,6 @@ export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000
         setPrice(firstProduct.price.toString());
         setQuantity(firstProduct.quantity.toString());
         
-        // Check if it's a product from catalog
         const matchedProduct = availableProducts.find(p => p.id === firstProduct.productId);
         if (matchedProduct) {
           setSelectedProduct(firstProduct.productId);
@@ -184,7 +173,7 @@ export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {isEditMode ? "Редактировать заказ" : "Создать новый заказ"}
+            {initialData ? "Редактировать заказ" : "Создать новый заказ"}
           </DialogTitle>
           <DialogDescription>
             Введите информацию о заказе
@@ -192,7 +181,6 @@ export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-3">
-          {/* Товар */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <Label htmlFor="productName">Товар</Label>
@@ -228,7 +216,6 @@ export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000
             )}
           </div>
           
-          {/* Цена и Количество */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="price">Цена (тг)</Label>
@@ -270,7 +257,6 @@ export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000
             </div>
           </div>
           
-          {/* Заказчик */}
           <div className="space-y-2">
             <Label htmlFor="customerName">Имя заказчика</Label>
             <Input
@@ -287,7 +273,6 @@ export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000
             )}
           </div>
           
-          {/* Телефон */}
           <div className="space-y-2">
             <Label htmlFor="phoneNumber">Номер телефона (необязательно)</Label>
             <Input
@@ -305,7 +290,6 @@ export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000
             )}
           </div>
           
-          {/* Дата и Статус */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="date">Дата</Label>
@@ -343,7 +327,6 @@ export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000
             </div>
           </div>
           
-          {/* Описание */}
           <div className="space-y-2">
             <Label htmlFor="description">Описание (необязательно)</Label>
             <Textarea
@@ -355,7 +338,6 @@ export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000
             />
           </div>
           
-          {/* Фото */}
           <div className="space-y-2">
             <Label>Фото (необязательно)</Label>
             <ImageUpload 
@@ -363,7 +345,7 @@ export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000
               onChange={setImage} 
               maxSize={maxImageSize} // KB
               className="h-[120px]"
-              enableCrop={true}
+              enableCrop={false}
             />
           </div>
           
@@ -378,7 +360,7 @@ export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isEditMode ? "Сохранить" : "Создать"}
+              {initialData ? "Сохранить" : "Создать"}
             </Button>
           </DialogFooter>
         </form>

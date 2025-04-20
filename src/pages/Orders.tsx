@@ -16,7 +16,7 @@ const Orders = () => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showConverter, setShowConverter] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("list"); // Default to list view
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid"); // Changed default to grid
   const contentRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 

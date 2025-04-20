@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Layout } from "@/components/Layout";
 import { useApp } from "@/lib/context";
@@ -16,7 +15,7 @@ const Orders = () => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showConverter, setShowConverter] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid"); // Changed default to grid
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const contentRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
@@ -43,14 +42,12 @@ const Orders = () => {
     }
   }, [handleScroll]);
 
-  // Reset all filters and settings when leaving the page - but only once when component unmounts
   useEffect(() => {
-    // This will run when component unmounts
     return () => {
       setSearchFilters({ type: "orders", query: "" });
       setSortOption("dateNewest");
     };
-  }, []); // Empty dependency array to run only on unmount
+  }, []);
 
   return (
     <Layout title="Заказы" contentRef={contentRef}>
@@ -66,7 +63,7 @@ const Orders = () => {
             onClick={() => setAddDialogOpen(true)} 
             disabled={products.length === 0}
             title={products.length === 0 ? "Добавьте товары, чтобы создать заказ" : "Создать заказ"}
-            className="bg-green-500 hover:bg-green-600"
+            className="bg-primary hover:bg-primary/90"
             size="sm"
           >
             <Plus className="h-4 w-4" />
@@ -84,7 +81,7 @@ const Orders = () => {
             <Button 
               onClick={() => setAddDialogOpen(true)} 
               disabled={products.length === 0}
-              className="bg-green-500 hover:bg-green-600"
+              className="bg-primary hover:bg-primary/90"
             >
               <Plus className="mr-2 h-4 w-4" />
               Создать заказ

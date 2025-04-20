@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useApp } from "@/lib/context";
 import {
@@ -81,10 +80,10 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
 
   const getBadgeVariant = (status: string) => {
     switch (status.toLowerCase()) {
-      case "на складе":
-        return "default";
       case "в пути":
-        return "secondary";
+        return "status-in-transit";
+      case "на складе":
+        return "status-in-stock";
       default:
         return "outline";
     }
@@ -93,7 +92,6 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
   const statuses = ["в пути", "на складе"];
 
   if (viewMode === "list") {
-    // Simplified list view
     return (
       <>
         <Card className="overflow-hidden hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => setShowDetailsModal(true)}>
@@ -184,7 +182,6 @@ export function OrderCard({ order, viewMode }: OrderCardProps) {
     );
   }
 
-  // Grid view (tile)
   return (
     <>
       <Card className="overflow-hidden cursor-pointer relative h-[200px]" onClick={() => setShowDetailsModal(true)}>

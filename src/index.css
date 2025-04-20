@@ -1,17 +1,16 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 240 4% 94%; /* #ECECF1 */
     --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
+    --card: 240 12% 59%; /* #8E8EA0 */
     --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
+    --popover: 240 12% 59%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
+    --primary: 162 84% 35%; /* #10A37F */
     --primary-foreground: 0 0% 98%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
@@ -30,12 +29,12 @@
   .dark {
     --background: 234 10% 23%; /* #343541 */
     --foreground: 0 0% 98%;
-    --card: 234 10% 23%;
+    --card: 234 11% 27%; /* #444654 */
     --card-foreground: 0 0% 98%;
-    --popover: 234 10% 23%;
+    --popover: 234 11% 27%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
+    --primary: 162 84% 35%; /* #10A37F */
+    --primary-foreground: 0 0% 98%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 3.7% 15.9%;
@@ -59,7 +58,6 @@
   }
 }
 
-/* Keep original styles but update sidebar and cards */
 .sidebar {
   @apply z-40 bg-background border-r;
 }
@@ -68,32 +66,34 @@
   @apply bg-card text-card-foreground shadow-sm border;
 }
 
-/* Dropdown menus should always be on top of other content */
 .dropdown-menu {
   @apply z-50 bg-popover border shadow-md;
 }
 
-/* Status badges in cards */
 .status-badge {
   @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-sm font-medium;
 }
 
-/* Function panel updates */
+.status-in-transit {
+  @apply bg-[#FFD700] text-black hover:bg-[#FFD700]/90;
+}
+
+.status-in-stock {
+  @apply bg-blue-500 text-white hover:bg-blue-600;
+}
+
 .function-panel {
   @apply sticky top-0 z-30 bg-background/80 backdrop-blur-sm border-b;
 }
 
-/* Fixed width containers for mobile-like appearance */
 .fixed-width-container {
   @apply max-w-md mx-auto overflow-hidden;
 }
 
-/* Text truncation for consistent sizing */
 .text-truncate {
   @apply truncate max-w-full;
 }
 
-/* Product modal overlay */
 .product-modal-overlay {
   @apply fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4;
 }

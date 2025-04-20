@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Layout } from "@/components/Layout";
 import { useApp } from "@/lib/context";
@@ -41,14 +40,12 @@ const Products = () => {
     }
   }, [handleScroll]);
 
-  // Reset all filters and settings when leaving the page - only once when component unmounts
   useEffect(() => {
-    // This will run when component unmounts
     return () => {
       setSearchFilters({ type: "products", query: "" });
       setSortOption("dateNewest");
     };
-  }, []); // Empty dependency array to run only on unmount
+  }, []);
 
   return (
     <Layout title="Товары" contentRef={contentRef}>
@@ -62,7 +59,7 @@ const Products = () => {
           </div>
           <Button
             onClick={() => setAddDialogOpen(true)}
-            className="bg-green-500 hover:bg-green-600"
+            className="bg-primary hover:bg-primary/90"
             size="sm"
             title="Добавить товар"
           >

@@ -9,6 +9,7 @@ import Products from "./pages/Products";
 import Orders from "./pages/Orders";
 import Settings from "./pages/Settings";
 import Database from "./pages/Database";
+import Notes from "./pages/Notes";
 import NotFound from "./pages/NotFound";
 
 // Create a client
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/orders" element={<Orders />} />
             <Route path="/products" element={<Products />} />
             <Route path="/database" element={<Database />} />
+            <Route path="/notes" element={<Notes />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

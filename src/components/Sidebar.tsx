@@ -12,6 +12,7 @@ import {
   Sun, 
   Moon,
   Database,
+  FileText,
   Menu
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -82,6 +83,14 @@ export function Sidebar({ className }: SidebarProps) {
                   База данных
                 </MobileNavItem>
                 <MobileNavItem
+                  to="/notes"
+                  active={location.pathname === "/notes"}
+                  icon={<FileText className="w-4 h-4 mr-2" />}
+                  onClick={handleLinkClick}
+                >
+                  Заметки
+                </MobileNavItem>
+                <MobileNavItem
                   to="/settings"
                   active={location.pathname === "/settings"}
                   icon={<Settings className="w-4 h-4 mr-2" />}
@@ -142,6 +151,13 @@ export function Sidebar({ className }: SidebarProps) {
                 count={database.length}
               >
                 База данных
+              </DesktopNavItem>
+              <DesktopNavItem
+                to="/notes"
+                active={location.pathname === "/notes"}
+                icon={<FileText className="w-4 h-4 mr-2" />}
+              >
+                Заметки
               </DesktopNavItem>
               <DesktopNavItem
                 to="/settings"

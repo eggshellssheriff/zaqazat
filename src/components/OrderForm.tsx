@@ -170,7 +170,7 @@ export function OrderForm({ open, onOpenChange, initialData, maxImageSize = 1000
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {initialData ? "Редактировать заказ" : "Создать новый заказ"}
